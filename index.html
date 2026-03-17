@@ -401,8 +401,7 @@ function revealCard() {
   setTimeout(()=>document.getElementById('floralBot').classList.add('show'), 3400);
   document.getElementById('confetti-canvas').classList.add('show');
   initHeart();
-  // Launch fireworks after card is fully revealed
-  setTimeout(() => { if (window.startFireworks) window.startFireworks(); }, 1200);
+  // NO fireworks here — fireworks only start after heart reaches center
 }
 
 function startTyping() {
@@ -412,13 +411,27 @@ function startTyping() {
     if (i < MESSAGE.length) { el.textContent += MESSAGE[i++]; setTimeout(t, 18); }
     else {
       document.querySelector('.cursor').style.display = 'none';
-      // Reveal cake after typing finishes
+      // Step 1: Reveal cake
       setTimeout(() => {
         drawCake();
         const wrap = document.getElementById('cakeWrap');
         wrap.style.opacity = '1';
         wrap.style.transform = 'translateY(0)';
       }, 400);
+
+      // Step 2: After cake shown for 3s, fade card out
+      setTimeout(() => {
+        const card = document.getElementById('mainCard');
+        card.style.transition = 'opacity 1.5s ease, transform 1.5s ease';
+        card.style.opacity    = '0';
+        card.style.transform  = 'translateY(-30px) scale(0.96)';
+
+        // Step 3: After card fades, animate heart rising to center
+        setTimeout(() => {
+          card.style.display = 'none';
+          window.moveHeartToCenter();
+        }, 1600);
+      }, 3500);
     }
   })();
 }
@@ -699,8 +712,10 @@ const pcs=Array.from({length:100},()=>({
   r:Math.random()*360, vx:(Math.random()-.5)*1.2,
   vy:1.2+Math.random()*2, vr:(Math.random()-.5)*3, circle:Math.random()<.4
 }));
+let confettiActive = true;
 (function drawConf(){
   ctx2d.clearRect(0,0,cv.width,cv.height);
+  if (!confettiActive) return;
   pcs.forEach(p=>{
     ctx2d.save(); ctx2d.translate(p.x,p.y); ctx2d.rotate(p.r*Math.PI/180);
     ctx2d.fillStyle=p.c; ctx2d.globalAlpha=.82;
@@ -934,32 +949,58 @@ const pcs=Array.from({length:100},()=>({
   function scheduleNext() {
     if (!fwActive) return;
     rockets.push(new Rocket());
-    // Authentic stagger: 0.8–2.2 seconds between rockets
     setTimeout(scheduleNext, 800 + Math.random() * 1400);
   }
 
+  let fwAlpha = 0;       // starts 0, fades in then out
+  let fwFading = false;  // true when fading out
+
   window.startFireworks = function () {
     fwActive = true;
+    fwAlpha  = 0;
+    fwFading = false;
+
+    // Fade canvas in
+    let ft = 0;
+    const fadeIn = setInterval(() => {
+      ft += 0.04; fwAlpha = Math.min(ft, 1);
+      if (ft >= 1) clearInterval(fadeIn);
+    }, 30);
+
     // First burst — 2 rockets close together
     rockets.push(new Rocket());
     setTimeout(() => rockets.push(new Rocket()), 350);
     // Then ongoing
     setTimeout(scheduleNext, 900);
-    // Stop after 22 seconds
-    setTimeout(() => { fwActive = false; }, 22000);
+  };
+
+  // Called after Happy Birthday Sister fully types — fade fireworks out
+  window.fadeOutFireworks = function() {
+    fwActive = false;  // stop new rockets
+    fwFading = true;
   };
 
   /* ── RENDER LOOP ──────────────────────────────────── */
   (function fwLoop() {
-    // Semi-transparent fade — keeps rocket trails visible
-    // Heart canvas is on a separate canvas so it is unaffected
+    // Fade out smoothly
+    if (fwFading && fwAlpha > 0) {
+      fwAlpha = Math.max(0, fwAlpha - 0.006);
+      if (fwAlpha <= 0) {
+        fwCtx.clearRect(0, 0, fwCv.width, fwCv.height);
+        requestAnimationFrame(fwLoop);
+        return;
+      }
+    }
+
     fwCtx.fillStyle = 'rgba(0,0,0,0.22)';
     fwCtx.fillRect(0, 0, fwCv.width, fwCv.height);
 
+    // Apply global alpha to entire fireworks canvas
+    fwCv.style.opacity = fwAlpha;
+
     // Rockets
     rockets.forEach(r => {
-      r.update();
-      r.draw();
+      r.update(); r.draw();
       if (r.done) bursts.push(new Burst(r.x, r.y, r.color));
     });
     rockets = rockets.filter(r => !r.done);
@@ -1070,6 +1111,115 @@ function initHeart() {
      - layerOffset : pixel offset along normal        */
   let particles = [];
   let R, CX, CY, FONT, SPEED;
+  // Center gold text state
+  let centerLines     = [];   // [{text}]
+  let centerTextAlpha = 0;
+  let centerTyping    = false;
+
+  // Full message to type in center
+  const CENTER_MSGS = ['Happy Birthday,', 'Sister!'];
+
+  function startCenterText() {
+    centerTyping = true;
+    centerTextAlpha = 0;
+
+    // Fade in the text container first
+    let fadeT = 0;
+    const fadeIn = setInterval(() => {
+      fadeT += 0.04;
+      centerTextAlpha = Math.min(fadeT, 1);
+      if (fadeT >= 1) clearInterval(fadeIn);
+    }, 30);
+
+    // Type each line sequentially
+    let lineIdx = 0;
+    centerLines = [{ text: '' }, { text: '' }];
+
+    function typeLine(lIdx, msg, cb) {
+      let ci = 0;
+      centerLines[lIdx] = { text: '' };
+      (function typeChar() {
+        if (ci < msg.length) {
+          centerLines[lIdx].text += msg[ci++];
+          setTimeout(typeChar, 55);  // slightly slower — dramatic
+        } else if (cb) {
+          setTimeout(cb, 400);
+        }
+      })();
+    }
+
+    // Type line 1 then line 2 then start spin + fade fireworks
+    typeLine(0, CENTER_MSGS[0], () => {
+      typeLine(1, CENTER_MSGS[1], () => {
+        setTimeout(() => {
+          if (window.startHeartSpin)   window.startHeartSpin();
+          // Fade fireworks out slowly after text is done
+          setTimeout(() => { if (window.fadeOutFireworks) window.fadeOutFireworks(); }, 3000);
+        }, 800);
+      });
+    });
+  }
+  // Spin state — triggered after text is fully typed
+  let spinActive   = false;
+  let spinAngle    = 0;
+  let spinSpeed    = 0;          // starts at 0, ramps up
+  const MAX_SPIN   = 0.008;      // max radians per frame — slow elegant spin
+
+  // Orbiting sparkle planets
+  const ORBIT_COUNT  = 28;
+  const GOLD_COLORS  = ['#ffd700','#ffec6e','#fff8dc','#ffa500','#ffe066','#fff0a0','#f5c518'];
+  let   orbitActive  = false;  // sparkles disabled
+  let   orbitAlpha   = 0;
+
+  const orbiters = Array.from({ length: ORBIT_COUNT }, (_, i) => ({
+    angle:    (i / ORBIT_COUNT) * Math.PI * 2,   // evenly spread
+    orbitR:   0,                                  // starts at 0, expands outward
+    targetR:  (0.85 + Math.random() * 0.45),      // multiplier of heart R
+    speed:    (Math.random() > 0.5 ? 1 : -1)      // clockwise or counter
+              * (0.004 + Math.random() * 0.006),   // orbital speed
+    size:     1.8 + Math.random() * 2.8,
+    color:    GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)],
+    twinkle:  Math.random() * Math.PI * 2,
+    trail:    [],
+    layer:    Math.floor(Math.random() * 3),       // 3 orbital layers
+  }));
+
+  // Called after gold text finishes typing
+  window.startHeartSpin = function() {
+    spinActive  = false; // spin disabled
+    orbitActive = false;
+  };
+
+  // Ramp up spin speed smoothly
+  function updateSpin() {
+    if (!spinActive) return;
+    if (spinSpeed < MAX_SPIN) spinSpeed += 0.00008;
+    spinAngle += spinSpeed;
+  }
+  let startCY    = null;
+  let moveStart  = null;
+  const MOVE_DUR = 2200; // ms — smooth rise duration
+
+  // Called externally after card fades out
+  window.moveHeartToCenter = function() {
+    const W     = canvas.width;
+    const H     = canvas.height;
+    startCY  = CY;
+    targetCY = H * 0.50;
+    moveStart = performance.now();
+
+    // Stop confetti immediately
+    confettiActive = false;
+    ctx2d.clearRect(0, 0, cv.width, cv.height);
+
+    // Step 1: Heart reaches center → launch fireworks
+    setTimeout(() => {
+      if (window.startFireworks) window.startFireworks();
+    }, MOVE_DUR + 200);
+
+    // Step 2: Start gold text typing after heart settles
+    setTimeout(() => { startCenterText(); }, MOVE_DUR + 400);
+  };
 
   function build() {
     particles = [];
@@ -1147,6 +1297,24 @@ function initHeart() {
     const beat          = 1 + Math.sin(elapsed * 0.6) * 0.012;
     const globalAdvance = elapsed * SPEED;
 
+    // Smoothly animate CY toward center when triggered
+    if (moveStart !== null && targetCY !== null) {
+      const moveElapsed = performance.now() - moveStart;
+      const prog = Math.min(moveElapsed / MOVE_DUR, 1);
+      // Ease in-out cubic
+      const ease = prog < 0.5
+        ? 4 * prog * prog * prog
+        : 1 - Math.pow(-2 * prog + 2, 3) / 2;
+      CY = startCY + (targetCY - startCY) * ease;
+      if (prog >= 1) { CY = targetCY; moveStart = null; }
+    }
+
+    // Update spin
+    updateSpin();
+
+    // Fade in orbiters
+    if (orbitActive && orbitAlpha < 1) orbitAlpha = Math.min(orbitAlpha + 0.012, 1);
+
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
     ctx.font         = `bold ${FONT}px 'Nunito', sans-serif`;
@@ -1161,16 +1329,160 @@ function initHeart() {
       const pos = hPos(t);
       const nor = hNormal(t);
 
-      // Offset each row along the normal
       const normOff = p.layerOffset / R;
       const nx = pos.x + nor.nx * normOff;
       const ny = pos.y + nor.ny * normOff;
 
-      const sx = CX + nx * R * beat;
-      const sy = CY + ny * R * beat * 0.93;
+      // Apply spin rotation around heart center
+      const cosS = Math.cos(spinAngle);
+      const sinS = Math.sin(spinAngle);
+      const rx   = nx * cosS - ny * sinS;
+      const ry   = nx * sinS + ny * cosS;
+
+      const sx = CX + rx * R * beat;
+      const sy = CY + ry * R * beat * 0.93;
 
       ctx.fillText('I love you', sx, sy);
     });
+
+    // ── ORBITING GOLDEN SPARKLES ──
+    if (orbitActive && orbitAlpha > 0) {
+      orbiters.forEach(o => {
+        // Expand orbit radius outward smoothly
+        if (o.orbitR < o.targetR) o.orbitR = Math.min(o.orbitR + 0.008, o.targetR);
+
+        // Advance orbital angle
+        o.angle   += o.speed;
+        o.twinkle += 0.06;
+
+        // 3 orbital radii for depth — inner/mid/outer
+        const baseR  = R * (1.15 + o.layer * 0.22) * o.orbitR;
+        const ox     = CX + Math.cos(o.angle + spinAngle) * baseR;
+        const oy     = CY + Math.sin(o.angle + spinAngle) * baseR * 0.93;
+
+        // Twinkle size
+        const sz = o.size * (0.5 + Math.abs(Math.sin(o.twinkle)) * 1.0);
+
+        // Trail for comet effect
+        o.trail.push({ x: ox, y: oy });
+        if (o.trail.length > 10) o.trail.shift();
+
+        // Draw trail
+        if (o.trail.length > 2) {
+          ctx.save();
+          for (let ti = 1; ti < o.trail.length; ti++) {
+            const ta = (ti / o.trail.length) * orbitAlpha * 0.5;
+            ctx.globalAlpha  = ta;
+            ctx.strokeStyle  = o.color;
+            ctx.shadowColor  = o.color;
+            ctx.shadowBlur   = 6;
+            ctx.lineWidth    = sz * (ti / o.trail.length) * 0.8;
+            ctx.beginPath();
+            ctx.moveTo(o.trail[ti-1].x, o.trail[ti-1].y);
+            ctx.lineTo(o.trail[ti].x,   o.trail[ti].y);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // Draw sparkle head
+        ctx.save();
+        ctx.globalAlpha = orbitAlpha * (0.7 + Math.sin(o.twinkle) * 0.3);
+        ctx.fillStyle   = o.color;
+        ctx.shadowColor = o.color;
+        ctx.shadowBlur  = 14;
+        ctx.beginPath();
+        ctx.arc(ox, oy, sz, 0, Math.PI * 2);
+        ctx.fill();
+        // Bright center
+        ctx.globalAlpha = orbitAlpha * 0.9;
+        ctx.fillStyle   = '#fff';
+        ctx.shadowBlur  = 6;
+        ctx.beginPath();
+        ctx.arc(ox, oy, sz * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    // ── LUXURY GOLD CENTER TEXT ──
+    if (centerTextAlpha > 0 && centerLines.length > 0) {
+      const isMob   = canvas.width < 600;
+      const W       = canvas.width;
+
+      // Font sizes — elegant and refined
+      const fSize1  = isMob ? 16 : 22;   // "Happy Birthday,"
+      const fSize2  = isMob ? 20 : 28;   // "Sister!"
+      const lineH   = isMob ? 28 : 38;
+
+      // Slow shimmer sweep — moves across text over time
+      const sweep   = ((elapsed * 0.4) % 1);  // 0→1 repeating
+      const sweepX  = CX - 160 + sweep * 320;
+
+      ctx.save();
+      ctx.globalAlpha  = centerTextAlpha;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+
+      centerLines.forEach((line, i) => {
+        if (!line.text) return;
+        const fs   = i === 0 ? fSize1 : fSize2;
+        const yOff = (i - (centerLines.length - 1) / 2) * lineH;
+        const ty   = CY + yOff;
+
+        // ── Layer 1: deep outer glow (rose gold) ──
+        ctx.save();
+        ctx.font      = `bold italic ${fs}px 'Cormorant Garamond', serif`;
+        ctx.fillStyle = 'rgba(180,100,80,0.0)';
+        ctx.shadowColor = '#c8a07a';
+        ctx.shadowBlur  = 40;
+        ctx.fillText(line.text, CX, ty);
+        ctx.restore();
+
+        // ── Layer 2: mid glow (warm gold) ──
+        ctx.save();
+        ctx.font        = `bold italic ${fs}px 'Cormorant Garamond', serif`;
+        ctx.fillStyle   = 'rgba(255,180,50,0.0)';
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur  = 22;
+        ctx.fillText(line.text, CX, ty);
+        ctx.restore();
+
+        // ── Layer 3: main text — rich gold gradient ──
+        const grad = ctx.createLinearGradient(CX - fs*4, ty - fs, CX + fs*4, ty + fs);
+        grad.addColorStop(0.00, '#8B6914');
+        grad.addColorStop(0.15, '#c8940a');
+        grad.addColorStop(0.30, '#e8c060');
+        grad.addColorStop(0.45, '#fff8e0');
+        grad.addColorStop(0.50, '#ffffff');
+        grad.addColorStop(0.55, '#fff8e0');
+        grad.addColorStop(0.70, '#e8c060');
+        grad.addColorStop(0.85, '#c8940a');
+        grad.addColorStop(1.00, '#8B6914');
+        ctx.save();
+        ctx.font        = `bold italic ${fs}px 'Cormorant Garamond', serif`;
+        ctx.fillStyle   = grad;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur  = 10;
+        ctx.fillText(line.text, CX, ty);
+        ctx.restore();
+
+        // ── Layer 4: animated shimmer sweep over text ──
+        ctx.save();
+        ctx.font = `bold italic ${fs}px 'Cormorant Garamond', serif`;
+        const shimmer = ctx.createLinearGradient(sweepX - 60, ty, sweepX + 60, ty);
+        shimmer.addColorStop(0,   'rgba(255,255,255,0)');
+        shimmer.addColorStop(0.4, 'rgba(255,255,255,0)');
+        shimmer.addColorStop(0.5, 'rgba(255,255,255,0.55)');
+        shimmer.addColorStop(0.6, 'rgba(255,255,255,0)');
+        shimmer.addColorStop(1,   'rgba(255,255,255,0)');
+        ctx.fillStyle = shimmer;
+        ctx.fillText(line.text, CX, ty);
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
 
     requestAnimationFrame(draw);
   }
