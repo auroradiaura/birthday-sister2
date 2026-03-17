@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Happy Birthday Cicy! 🌹</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      background: #000;
+      font-family: 'Nunito', sans-serif;
+      color: #6d1f3e;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #heart-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+    #confetti-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
+      opacity: 0; transition: opacity .6s;
+    }
+    #confetti-canvas.show { opacity: 1; }
+    #page {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      min-height: 100vh; min-height: -webkit-fill-available;
+      padding: clamp(20px,5vw,40px) 16px clamp(16px,4vw,32px);
+    }
+    #intro {
+      position: fixed; inset: 0; z-index: 3000;
+      background: radial-gradient(ellipse at center, #9b1b30 0%, #4a0010 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 4px;
+      transition: opacity .9s ease;
+    }
+    #intro.hide { opacity: 0; pointer-events: none; }
+    #intro-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(8rem,30vw,17rem);
+      font-weight: 600; color: #fff; line-height: 1;
+      text-shadow: 0 0 100px rgba(255,120,120,.65), 0 0 40px rgba(255,200,200,.35);
+    }
+    #intro-word {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(2rem,8vw,5rem);
+      color: #ffb3c6; letter-spacing: 5px;
+      min-height: 1.2em; text-align: center; padding: 0 20px;
+    }
+    .pulse { animation: pulse .6s cubic-bezier(.36,.07,.19,.97); }
+    @keyframes pulse {
+      0%  { transform: scale(.15) rotate(-10deg); opacity: 0; }
+      55% { transform: scale(1.18) rotate(3deg);  opacity: 1; }
+      80% { transform: scale(.96); }
+      100%{ transform: scale(1); opacity: 1; }
+    }
+    .fadeWord { animation: fadeWord .55s ease-out forwards; }
+    @keyframes fadeWord {
+      from { opacity: 0; transform: translateY(22px) scale(.88); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .card {
+      position: relative; z-index: 10;
+      background: rgba(255,240,245,0.96);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 2px solid rgba(244,143,177,0.85);
+      border-radius: 28px;
+      padding: clamp(22px,5vw,48px) clamp(16px,5vw,50px) clamp(22px,5vw,44px);
+      width: 100%; max-width: 560px; text-align: center;
+      box-shadow: 0 8px 60px rgba(214,58,110,.20), 0 2px 20px rgba(0,0,0,.12),
+                  inset 0 1px 0 rgba(255,255,255,.9);
+      opacity: 0; transform: translateY(44px) scale(.97);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    .card.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .petals-top {
+      font-size: clamp(1.1rem,3.8vw,1.9rem); letter-spacing: 8px;
+      margin-bottom: 10px; display: block;
+      animation: petalSway 4s ease-in-out infinite alternate;
+    }
+    @keyframes petalSway {
+      from { transform: rotate(-4deg) scale(1); }
+      to   { transform: rotate(4deg) scale(1.05); }
+    }
+    .hb-word {
+      display: inline-block;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600; color: #d63a6e;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .hb-word.show { opacity: 1; transform: translateY(0); }
+    #word-happy, #word-bday { font-size: clamp(1.7rem,6.5vw,3.4rem); }
+    #word-to  { font-size: clamp(1.1rem,4.5vw,2.3rem); color: #e91e8c; }
+    #word-you { font-size: clamp(1.4rem,5.5vw,2.9rem); font-style: italic; }
+    .name {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: clamp(1.4rem,5.5vw,2.7rem); color: #c0392b;
+      margin: 4px 0 14px;
+      opacity: 0; transform: translateY(18px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .name.show { opacity: 1; transform: translateY(0); }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 16px;
+      opacity: 0; transition: opacity .7s ease;
+    }
+    .divider.show { opacity: 1; }
+    .divider-line { flex:1; max-width:60px; height:1.5px; background:linear-gradient(to right,transparent,#f48fb1,transparent); }
+    .divider span { font-size: 1.3rem; }
+    .message-box {
+      background: rgba(255,255,255,.80); border: 1.5px solid #f8bbd0;
+      border-radius: 18px;
+      padding: clamp(12px,3.5vw,24px) clamp(12px,3.5vw,26px);
+      margin-bottom: 16px; text-align: left; min-height: 90px;
+      opacity: 0; transition: opacity .7s ease;
+    }
+    .message-box.show { opacity: 1; }
+    #typed-message {
+      font-size: clamp(.80rem,2.5vw,1rem);
+      line-height: 1.82; color: #6d1f3e;
+      white-space: pre-wrap; font-style: italic;
+    }
+    .cursor {
+      display: inline-block; width: 2px; height: 1.1em;
+      background: #d63a6e; margin-left: 2px; vertical-align: text-bottom;
+      animation: blink .65s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .floral-bottom {
+      margin-top: 16px; font-size: clamp(.95rem,3.5vw,1.5rem);
+      letter-spacing: 6px; opacity: 0; transition: opacity .7s ease;
+    }
+    .floral-bottom.show { opacity: 1; }
+    .balloon {
+      position: fixed; font-size: 2rem; pointer-events: none;
+      z-index: 998; animation: riseUp linear forwards;
+    }
+    @keyframes riseUp {
+      0%  { transform: translateY(0) rotate(-8deg); opacity: 1; }
+      50% { transform: translateY(-50vh) rotate(8deg); }
+      100%{ transform: translateY(-105vh) rotate(-4deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="intro">
+  <div id="intro-number">3</div>
+  <div id="intro-word"></div>
+</div>
+
+<canvas id="heart-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
+<div id="page">
+  <div class="card" id="mainCard">
+    <span class="petals-top">🌸 🌹 🌸</span>
+    <div>
+      <span class="hb-word" id="word-happy">Happy</span>&nbsp;
+      <span class="hb-word" id="word-bday">Birthday,</span>
+    </div>
+    <div>
+      <span class="hb-word" id="word-to">To</span>&nbsp;
+      <span class="hb-word" id="word-you">You</span>
+    </div>
+    <p class="name" id="nameEl">Cicy 🌹</p>
+    <div class="divider" id="dividerEl">
+      <div class="divider-line"></div>
+      <span>🌺</span>
+      <div class="divider-line"></div>
+    </div>
+    <div class="message-box" id="msgBox">
+      <span id="typed-message"></span><span class="cursor"></span>
+    </div>
+    <div class="floral-bottom" id="floralBot">🌸 🌼 🌹 🌼 🌸</div>
+  </div>
+</div>
+
+<script>
+/* ══ INTRO ══ */
+const numEl  = document.getElementById('intro-number');
+const wordEl = document.getElementById('intro-word');
+const intro  = document.getElementById('intro');
+const steps  = [
+  {num:'3',word:'',dur:850},{num:'2',word:'',dur:850},{num:'1',word:'',dur:850},
+  {num:'',word:'Happy',dur:900},{num:'',word:'Birthday',dur:900},{num:'',word:'To You!',dur:1100},
+];
+let si = 0;
+function runStep() {
+  if (si >= steps.length) { intro.classList.add('hide'); setTimeout(revealCard, 900); return; }
+  const s = steps[si];
+  numEl.classList.remove('pulse'); wordEl.classList.remove('fadeWord');
+  void numEl.offsetWidth;
+  numEl.textContent = s.num; wordEl.textContent = s.word;
+  if (s.num)  numEl.classList.add('pulse');
+  if (s.word) { void wordEl.offsetWidth; wordEl.classList.add('fadeWord'); }
+  si++; setTimeout(runStep, s.dur);
+}
+setTimeout(runStep, 400);
+
+const MESSAGE = `May love and laughter\nLight your days\nAnd warm your heart and home;\n\nMay good and faithful friends be yours\nWherever you may roam;\n\nMay peace and plenty bless your world\nWith joy that long endures;\n\nMay all life's passing seasons\nBring the best to you and yours!\n\n🌸 Happy Birthday, Cicy! 🌸`;
+
+function revealCard() {
+  document.getElementById('mainCard').classList.add('visible');
+  [['word-happy',300],['word-bday',750],['word-to',1200],['word-you',1650]]
+    .forEach(([id,d])=>setTimeout(()=>document.getElementById(id).classList.add('show'),d));
+  setTimeout(()=>document.getElementById('nameEl').classList.add('show'),    2200);
+  setTimeout(()=>document.getElementById('dividerEl').classList.add('show'), 2600);
+  setTimeout(()=>{ document.getElementById('msgBox').classList.add('show'); startTyping(); }, 3000);
+  setTimeout(()=>document.getElementById('floralBot').classList.add('show'), 3400);
+  document.getElementById('confetti-canvas').classList.add('show');
+  initHeart();
+  // Launch fireworks after card is fully revealed
+  setTimeout(() => { if (window.startFireworks) window.startFireworks(); }, 1200);
+}
+
+function startTyping() {
+  const el = document.getElementById('typed-message');
+  let i = 0;
+  (function t() {
+    if (i < MESSAGE.length) { el.textContent += MESSAGE[i++]; setTimeout(t, 18); }
+    else document.querySelector('.cursor').style.display = 'none';
+  })();
+}
+
+/* ══ CONFETTI ══ */
+const cv    = document.getElementById('confetti-canvas');
+const ctx2d = cv.getContext('2d');
+function resizeCV(){ cv.width=innerWidth; cv.height=innerHeight; }
+resizeCV(); window.addEventListener('resize', resizeCV);
+const CCOLS=['#f48fb1','#e91e8c','#fce4ec','#c0392b','#ffd6e7','#fff','#ff80ab','#ffcdd2'];
+const pcs=Array.from({length:100},()=>({
+  x:Math.random()*innerWidth, y:Math.random()*innerHeight-innerHeight,
+  w:5+Math.random()*7, h:8+Math.random()*8,
+  c:CCOLS[Math.random()*CCOLS.length|0],
+  r:Math.random()*360, vx:(Math.random()-.5)*1.2,
+  vy:1.2+Math.random()*2, vr:(Math.random()-.5)*3, circle:Math.random()<.4
+}));
+(function drawConf(){
+  ctx2d.clearRect(0,0,cv.width,cv.height);
+  pcs.forEach(p=>{
+    ctx2d.save(); ctx2d.translate(p.x,p.y); ctx2d.rotate(p.r*Math.PI/180);
+    ctx2d.fillStyle=p.c; ctx2d.globalAlpha=.82;
+    if(p.circle){ctx2d.beginPath();ctx2d.arc(0,0,p.w/2,0,Math.PI*2);ctx2d.fill();}
+    else ctx2d.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ctx2d.restore();
+    p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+    if(p.y>cv.height+20){p.y=-20;p.x=Math.random()*cv.width;}
+  });
+  requestAnimationFrame(drawConf);
+})();
+
+/* ══════════════════════════════════════════════════════
+   AUTHENTIC FIREWORKS
+   — Rocket shoots straight up from bottom
+   — Thin bright trail as it climbs
+   — Small tight burst at peak — real scale
+   — Sparks fan out with gravity and fade naturally
+   — Multiple rockets staggered, different colors
+══════════════════════════════════════════════════════ */
+(function initFireworks() {
+  const fwCv = document.createElement('canvas');
+  fwCv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;';
+  document.body.appendChild(fwCv);
+  const fwCtx = fwCv.getContext('2d');
+  function fwResize(){ fwCv.width=innerWidth; fwCv.height=innerHeight; }
+  fwResize(); window.addEventListener('resize', fwResize);
+
+  // Authentic firework color palettes
+  const COLORS = [
+    '#ffdd44',  // gold
+    '#ff4444',  // red
+    '#44ddff',  // cyan
+    '#ff44ff',  // magenta
+    '#44ff88',  // green
+    '#ff8844',  // orange
+    '#ffffff',  // white
+    '#ff80ab',  // pink
+    '#bb88ff',  // purple
+  ];
+
+  let rockets = [];
+  let bursts  = [];
+  let fwActive = false;
+
+  /* ── ROCKET ──────────────────────────────────────────
+     Shoots from bottom edge straight up to a target y.
+     Leaves a thin bright streak trail.               */
+  class Rocket {
+    constructor() {
+      const W = fwCv.width, H = fwCv.height;
+      // Launch from random x along bottom
+      this.x     = W * (0.08 + Math.random() * 0.84);
+      this.y     = H;
+      // Target height — upper 15%–55% of screen
+      this.ty    = H * (0.12 + Math.random() * 0.38);
+      // Slight horizontal drift — authentic rockets wobble a tiny bit
+      this.vx    = (Math.random() - 0.5) * 0.8;
+      // Vertical speed — fast climb
+      this.vy    = -(10 + Math.random() * 5);
+      this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.trail = [];  // [{x,y,a}]
+      this.done  = false;
+    }
+
+    update() {
+      // Store trail point
+      this.trail.push({ x: this.x, y: this.y, a: 1.0 });
+      if (this.trail.length > 16) this.trail.shift();
+      this.trail.forEach(t => t.a *= 0.82);
+
+      this.x += this.vx;
+      this.y += this.vy;
+      // Slight gravity deceleration
+      this.vy  += 0.12;
+
+      // Explode when it reaches target height or starts falling
+      if (this.y <= this.ty || this.vy >= 0) this.done = true;
+    }
+
+    draw() {
+      // Draw trail — thin bright line
+      if (this.trail.length > 1) {
+        for (let i = 1; i < this.trail.length; i++) {
+          const t0 = this.trail[i - 1];
+          const t1 = this.trail[i];
+          const a  = t1.a * (i / this.trail.length);
+          fwCtx.save();
+          fwCtx.globalAlpha = a * 0.9;
+          fwCtx.strokeStyle = this.color;
+          fwCtx.shadowColor = this.color;
+          fwCtx.shadowBlur  = 4;
+          fwCtx.lineWidth   = 1.2;
+          fwCtx.beginPath();
+          fwCtx.moveTo(t0.x, t0.y);
+          fwCtx.lineTo(t1.x, t1.y);
+          fwCtx.stroke();
+          fwCtx.restore();
+        }
+      }
+      // Bright rocket head
+      fwCtx.save();
+      fwCtx.globalAlpha = 1;
+      fwCtx.fillStyle   = '#fff';
+      fwCtx.shadowColor = this.color;
+      fwCtx.shadowBlur  = 10;
+      fwCtx.beginPath();
+      fwCtx.arc(this.x, this.y, 1.8, 0, Math.PI * 2);
+      fwCtx.fill();
+      fwCtx.restore();
+    }
+  }
+
+  /* ── SPARK ───────────────────────────────────────────
+     One piece of an explosion burst.
+     Authentic scale — small, fast, fades quickly.   */
+  class Spark {
+    constructor(x, y, color, speed, angle) {
+      this.x     = x;
+      this.y     = y;
+      this.color = color;
+      // velocity from burst angle + speed
+      this.vx    = Math.cos(angle) * speed;
+      this.vy    = Math.sin(angle) * speed;
+      this.alpha = 1.0;
+      // fast fade — authentic fireworks fade in ~1–2 seconds
+      this.decay = 0.022 + Math.random() * 0.020;
+      this.grav  = 0.055;   // gravity
+      this.drag  = 0.980;   // air resistance
+      this.trail = [];
+      this.size  = 0.8 + Math.random() * 1.0;
+    }
+
+    update() {
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 6) this.trail.shift();
+
+      this.x  += this.vx;
+      this.y  += this.vy;
+      this.vy += this.grav;
+      this.vx *= this.drag;
+      this.vy *= this.drag;
+      this.alpha -= this.decay;
+    }
+
+    draw() {
+      if (this.alpha <= 0) return;
+
+      // Short bright tail
+      if (this.trail.length > 1) {
+        fwCtx.save();
+        fwCtx.strokeStyle = this.color;
+        fwCtx.shadowColor = this.color;
+        fwCtx.shadowBlur  = 3;
+        fwCtx.lineWidth   = this.size * 0.7;
+        fwCtx.lineCap     = 'round';
+        fwCtx.beginPath();
+        fwCtx.globalAlpha = this.alpha * 0.5;
+        fwCtx.moveTo(this.trail[0].x, this.trail[0].y);
+        this.trail.forEach(t => fwCtx.lineTo(t.x, t.y));
+        fwCtx.stroke();
+        fwCtx.restore();
+      }
+
+      // Spark head
+      fwCtx.save();
+      fwCtx.globalAlpha = this.alpha;
+      fwCtx.fillStyle   = this.color;
+      fwCtx.shadowColor = this.color;
+      fwCtx.shadowBlur  = 5;
+      fwCtx.beginPath();
+      fwCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      fwCtx.fill();
+      fwCtx.restore();
+    }
+
+    get dead() { return this.alpha <= 0; }
+  }
+
+  /* ── BURST ───────────────────────────────────────────
+     Small authentic explosion at rocket peak.
+     Sparks spread in a circular fan — realistic scale. */
+  class Burst {
+    constructor(x, y, color) {
+      this.sparks = [];
+      this.flash  = 1.0;
+      this.x = x; this.y = y;
+      this.color = color;
+
+      // Number of sparks — authentic fireworks: 40–70
+      const COUNT = 45 + Math.floor(Math.random() * 30);
+
+      // Burst type: uniform circle or slight variation
+      const baseSpeed = 2.2 + Math.random() * 2.0;  // small tight burst
+
+      for (let i = 0; i < COUNT; i++) {
+        // Evenly spaced angles + tiny random offset
+        const angle = (i / COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.18;
+        const speed = baseSpeed * (0.75 + Math.random() * 0.5);
+        // Vary color slightly within same palette
+        const sparkColor = Math.random() < 0.15 ? '#fff' : color;
+        this.sparks.push(new Spark(x, y, sparkColor, speed, angle));
+      }
+    }
+
+    update() {
+      this.flash = Math.max(0, this.flash - 0.10);
+      this.sparks.forEach(s => s.update());
+      this.sparks = this.sparks.filter(s => !s.dead);
+    }
+
+    draw() {
+      // Brief central flash — small and tight
+      if (this.flash > 0) {
+        fwCtx.save();
+        fwCtx.globalAlpha = this.flash * 0.75;
+        fwCtx.fillStyle   = '#fff';
+        fwCtx.shadowColor = this.color;
+        fwCtx.shadowBlur  = 20;
+        fwCtx.beginPath();
+        fwCtx.arc(this.x, this.y, this.flash * 8, 0, Math.PI * 2);
+        fwCtx.fill();
+        fwCtx.restore();
+      }
+      this.sparks.forEach(s => s.draw());
+    }
+
+    get dead() { return this.sparks.length === 0 && this.flash <= 0; }
+  }
+
+  /* ── LAUNCH SCHEDULER ─────────────────────────────── */
+  function scheduleNext() {
+    if (!fwActive) return;
+    rockets.push(new Rocket());
+    // Authentic stagger: 0.8–2.2 seconds between rockets
+    setTimeout(scheduleNext, 800 + Math.random() * 1400);
+  }
+
+  window.startFireworks = function () {
+    fwActive = true;
+    // First burst — 2 rockets close together
+    rockets.push(new Rocket());
+    setTimeout(() => rockets.push(new Rocket()), 350);
+    // Then ongoing
+    setTimeout(scheduleNext, 900);
+    // Stop after 22 seconds
+    setTimeout(() => { fwActive = false; }, 22000);
+  };
+
+  /* ── RENDER LOOP ──────────────────────────────────── */
+  (function fwLoop() {
+    // Semi-transparent black overlay — creates authentic motion blur trail
+    fwCtx.fillStyle = 'rgba(0,0,0,0.20)';
+    fwCtx.fillRect(0, 0, fwCv.width, fwCv.height);
+
+    // Rockets
+    rockets.forEach(r => {
+      r.update();
+      r.draw();
+      if (r.done) {
+        // Explode at rocket tip position
+        bursts.push(new Burst(r.x, r.y, r.color));
+      }
+    });
+    rockets = rockets.filter(r => !r.done);
+
+    // Bursts
+    bursts.forEach(b => { b.update(); b.draw(); });
+    bursts = bursts.filter(b => !b.dead);
+
+    requestAnimationFrame(fwLoop);
+  })();
+})();
+
+/* ══════════════════════════════════════════════════════════
+   PARTICLE TEXT SYSTEM
+   ─────────────────────────────────────────────────────────
+   • Pre-compute a high-resolution arc-length LUT of the
+     parametric heart curve
+   • Distribute N particles evenly around the full perimeter
+     across LAYERS concentric rings (to make a thick border)
+   • Every frame: advance each particle's arc-position by a
+     fixed speed → particle moves along the heart curve
+   • Position = heartPoint(arc) + normal * layerOffset
+   • Draw "I love you" at that position, always upright
+   • Result: a thick hollow heart border where every word
+     is continuously circulating — no left/right drift,
+     strictly following the heart shape
+══════════════════════════════════════════════════════════ */
+function initHeart() {
+  const canvas = document.getElementById('heart-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  const PINK = '#ff80ab';
+
+  function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+
+  /* ─── Parametric heart curve ───────────────────────
+     Input : t ∈ [0, 2π)
+     Output: {x, y} in normalised coords (~±1 range)  */
+  function hPos(t) {
+    const s = Math.sin(t);
+    return {
+      x:  s * s * s,
+      y: -(0.8125*Math.cos(t)
+         - 0.3125*Math.cos(2*t)
+         - 0.1250*Math.cos(3*t)
+         - 0.0625*Math.cos(4*t)),
+    };
+  }
+
+  /* ─── Outward unit normal at t ────────────────────── */
+  function hNormal(t) {
+    const dt = 0.0005;
+    const a  = hPos(t - dt);
+    const b  = hPos(t + dt);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.sqrt(dx*dx + dy*dy) || 1;
+    // tangent = (dx,dy)/len  →  normal = (dy,-dx)/len (outward)
+    return { nx: dy / len, ny: -dx / len };
+  }
+
+  /* ─── Arc-length LUT ───────────────────────────────
+     Builds a table mapping arc-distance s → parameter t
+     so we can place particles at equal arc-length spacing */
+  const LUT_N = 8000;
+  let   lutArc = 0;
+  const lut    = new Float64Array(LUT_N + 1); // lut[i] = arc at i*(2π/LUT_N)
+  const lutT   = new Float64Array(LUT_N + 1); // lutT[i] = t value
+
+  (function buildLUT() {
+    let prev = hPos(0), total = 0;
+    lut[0]  = 0;
+    lutT[0] = 0;
+    for (let i = 1; i <= LUT_N; i++) {
+      const t   = (i / LUT_N) * Math.PI * 2;
+      const cur = hPos(t);
+      total += Math.sqrt((cur.x-prev.x)**2 + (cur.y-prev.y)**2);
+      lut[i]  = total;
+      lutT[i] = t;
+      prev    = cur;
+    }
+    lutArc = total;
+  })();
+
+  /* binary search: arc distance s → t */
+  function arcToT(s) {
+    const target = ((s % lutArc) + lutArc) % lutArc;
+    let lo = 0, hi = LUT_N;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      lut[mid] < target ? lo = mid + 1 : hi = mid;
+    }
+    // linear interpolation between lo-1 and lo for smoothness
+    if (lo === 0) return lutT[0];
+    const t0 = lutT[lo-1], t1 = lutT[lo];
+    const a0 = lut[lo-1],  a1 = lut[lo];
+    const frac = a1 > a0 ? (target - a0) / (a1 - a0) : 0;
+    return t0 + frac * (t1 - t0);
+  }
+
+  /* ─── Particles ────────────────────────────────────
+     Each particle = one "I love you" word
+     - arcPos : current arc distance around heart
+     - layer  : which concentric ring (0 = outermost)
+     - layerOffset : pixel offset along normal        */
+  let particles = [];
+  let R, CX, CY, FONT, SPEED;
+
+  function build() {
+    particles = [];
+
+    const W     = canvas.width;
+    const H     = canvas.height;
+    const isMob = W < 600;
+
+    R    = isMob ? Math.min(W*0.44, H*0.30) : Math.min(W*0.30, H*0.36);
+    CX   = W / 2;
+    CY   = isMob ? H * 0.64 : H * 0.61;
+    FONT = isMob ? 4 : 5;
+
+    // Measure exact rendered word width
+    ctx.font = `bold ${FONT}px 'Nunito', sans-serif`;
+    const wordW  = ctx.measureText('I love you').width;
+    const GAP    = 2;                  // px gap between words
+    const wordPx = wordW + GAP;        // total slot per word in pixels
+
+    const lineH  = FONT * 1.25;       // row height in px
+    const ROWS   = isMob ? 5 : 7;
+
+    // Base loop duration in seconds — all rows share same loop time
+    // so the whole border moves as one unit
+    const LOOP_SECS = 90;
+
+    for (let row = 0; row < ROWS; row++) {
+      const layerOffset = -row * lineH;        // px inward from outline
+
+      // Actual radius of this row in pixels
+      const rowR = Math.max(1, R + layerOffset);
+
+      // Actual perimeter of this row in pixels
+      const perimPx = lutArc * rowR;
+
+      // Number of words that fit — floor so no overlap ever
+      const count = Math.floor(perimPx / wordPx);
+
+      // Arc length per word slot — evenly divided
+      const arcSlot = lutArc / count;
+
+      // Each row's speed = its own perimeter / LOOP_SECS
+      // → every word moves exactly wordPx pixels per arcSlot seconds
+      // → gap between any two words is always exactly GAP pixels
+      const rowSpeed = lutArc / LOOP_SECS;
+
+      // Stagger alternate rows by half a slot (brick pattern)
+      const stagger = (row % 2 === 0) ? 0 : arcSlot * 0.5;
+
+      for (let j = 0; j < count; j++) {
+        particles.push({
+          arcPos:      (j * arcSlot + stagger) % lutArc,
+          layerOffset,
+          rowSpeed,
+          row,
+        });
+      }
+    }
+
+    // Global SPEED not used — each particle uses its own rowSpeed
+    SPEED = lutArc / LOOP_SECS;
+  }
+
+  build();
+  window.addEventListener('resize', () => { resizeCanvas(); build(); });
+
+  const startTime = performance.now();
+  const FADE_IN   = 2.0;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const elapsed       = (performance.now() - startTime) / 1000;
+    const fadeAlpha     = Math.min(elapsed / FADE_IN, 1);
+    const beat          = 1 + Math.sin(elapsed * 0.6) * 0.012;
+    const globalAdvance = elapsed * SPEED;
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font         = `bold ${FONT}px 'Nunito', sans-serif`;
+    ctx.fillStyle    = PINK;
+    ctx.shadowColor  = PINK;
+    ctx.shadowBlur   = 5;
+    ctx.globalAlpha  = fadeAlpha;
+
+    particles.forEach(p => {
+      const arc = (p.arcPos + elapsed * p.rowSpeed) % lutArc;
+      const t   = arcToT(arc);
+      const pos = hPos(t);
+      const nor = hNormal(t);
+
+      // Offset each row along the normal
+      const normOff = p.layerOffset / R;
+      const nx = pos.x + nor.nx * normOff;
+      const ny = pos.y + nor.ny * normOff;
+
+      const sx = CX + nx * R * beat;
+      const sy = CY + ny * R * beat * 0.93;
+
+      ctx.fillText('I love you', sx, sy);
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}
+
+/* ══ BALLOONS ══ */
+const BALLOONS = ['🎈','🎉','🎊','💕','🎀','🌹'];
+function spawnBalloons(cx, cy) {
+  if (!intro.classList.contains('hide')) return;
+  for (let b = 0; b < 5; b++) {
+    const el = document.createElement('div');
+    el.className = 'balloon';
+    el.textContent = BALLOONS[Math.random()*BALLOONS.length|0];
+    el.style.left  = (cx-15+(Math.random()-.5)*70)+'px';
+    el.style.top   = cy+'px';
+    el.style.animationDuration = (2+Math.random())+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 3500);
+  }
+}
+document.addEventListener('click',   e => spawnBalloons(e.clientX, e.clientY));
+document.addEventListener('touchend', e => {
+  spawnBalloons(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+}, {passive:true});
+</script>
+</body>
+</html>
