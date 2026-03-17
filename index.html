@@ -293,6 +293,16 @@
     <div class="message-box" id="msgBox">
       <span id="typed-message"></span><span class="cursor"></span>
     </div>
+
+    <!-- Cake appears after typing finishes -->
+    <div id="cakeWrap" style="
+      opacity:0; transform:translateY(20px);
+      transition: opacity .9s ease, transform .9s ease;
+      margin-top: 18px; text-align:center;
+    ">
+      <canvas id="cakeCanvas" style="display:block; margin:0 auto;"></canvas>
+    </div>
+
     <div class="floral-bottom" id="floralBot">🌸 🌼 🌹 🌼 🌸</div>
   </div>
 </div>
@@ -400,7 +410,284 @@ function startTyping() {
   let i = 0;
   (function t() {
     if (i < MESSAGE.length) { el.textContent += MESSAGE[i++]; setTimeout(t, 18); }
-    else document.querySelector('.cursor').style.display = 'none';
+    else {
+      document.querySelector('.cursor').style.display = 'none';
+      // Reveal cake after typing finishes
+      setTimeout(() => {
+        drawCake();
+        const wrap = document.getElementById('cakeWrap');
+        wrap.style.opacity = '1';
+        wrap.style.transform = 'translateY(0)';
+      }, 400);
+    }
+  })();
+}
+
+/* ══════════════════════════════════════════════
+   BIRTHDAY CAKE — drawn with canvas 2D API
+   Beautiful 3-tier cake with candles, frosting,
+   decorations, and animated flame flicker
+══════════════════════════════════════════════ */
+function drawCake() {
+  const cv  = document.getElementById('cakeCanvas');
+  const isMob = window.innerWidth < 600;
+  const W   = isMob ? 200 : 260;
+  const H   = isMob ? 220 : 280;
+  cv.width  = W;
+  cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  // Scale factor
+  const S = W / 260;
+
+  function draw(flicker) {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W / 2;  // center x
+
+    /* ── PLATE ── */
+    ctx.save();
+    const plateGrad = ctx.createEllipse
+      ? null
+      : (() => {
+          const g = ctx.createLinearGradient(cx-90*S, H-18*S, cx+90*S, H-10*S);
+          g.addColorStop(0, '#e8c8d8'); g.addColorStop(0.5, '#fff0f5'); g.addColorStop(1, '#e8c8d8');
+          return g;
+        })();
+    ctx.fillStyle = plateGrad || '#f8e8f0';
+    ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 10*S;
+    ctx.beginPath();
+    ctx.ellipse(cx, H-14*S, 100*S, 14*S, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    /* ── BOTTOM TIER ── */
+    function drawTier(x, y, w, h, colorTop, colorMid, colorBot, hasDeco) {
+      // Body gradient
+      const g = ctx.createLinearGradient(x-w/2, y, x+w/2, y);
+      g.addColorStop(0,   colorBot);
+      g.addColorStop(0.15, colorMid);
+      g.addColorStop(0.5,  colorTop);
+      g.addColorStop(0.85, colorMid);
+      g.addColorStop(1,   colorBot);
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.18)'; ctx.shadowBlur = 8*S;
+      ctx.fillStyle = g;
+      // Rounded rect
+      const r = 8*S;
+      ctx.beginPath();
+      ctx.moveTo(x-w/2+r, y);
+      ctx.lineTo(x+w/2-r, y);
+      ctx.quadraticCurveTo(x+w/2, y, x+w/2, y+r);
+      ctx.lineTo(x+w/2, y+h-r);
+      ctx.quadraticCurveTo(x+w/2, y+h, x+w/2-r, y+h);
+      ctx.lineTo(x-w/2+r, y+h);
+      ctx.quadraticCurveTo(x-w/2, y+h, x-w/2, y+h-r);
+      ctx.lineTo(x-w/2, y+r);
+      ctx.quadraticCurveTo(x-w/2, y, x-w/2+r, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Frosting drips from top
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.shadowColor = 'rgba(255,200,220,0.5)'; ctx.shadowBlur = 4*S;
+      for (let d = 0; d < 7; d++) {
+        const dx = x - w/2 + 12*S + d * (w-24*S)/6;
+        const dh = 6*S + Math.sin(d*1.8)*4*S;
+        ctx.beginPath();
+        ctx.moveTo(dx - 6*S, y);
+        ctx.quadraticCurveTo(dx, y + dh + 4*S, dx + 6*S, y);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // Decorative dots along middle
+      if (hasDeco) {
+        const dotColors = ['#ff80ab','#ffb3c6','#f48fb1','#e91e8c','#ffcdd2'];
+        for (let d = 0; d < 8; d++) {
+          const dx = x - w/2 + 16*S + d*(w-32*S)/7;
+          ctx.save();
+          ctx.fillStyle = dotColors[d % dotColors.length];
+          ctx.shadowColor = dotColors[d % dotColors.length]; ctx.shadowBlur = 5*S;
+          ctx.beginPath();
+          ctx.arc(dx, y + h/2, 3.5*S, 0, Math.PI*2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Small flowers on mid tier
+      if (!hasDeco) {
+        for (let f = 0; f < 4; f++) {
+          const fx = x - w/2 + 18*S + f*(w-36*S)/3;
+          const fy = y + h/2;
+          drawFlower(ctx, fx, fy, 5*S, S);
+        }
+      }
+    }
+
+    function drawFlower(ctx, fx, fy, r, S) {
+      const petalC = ['#ff80ab','#f48fb1','#ffb3c6','#e91e8c'];
+      for (let p = 0; p < 5; p++) {
+        const a = (p/5)*Math.PI*2;
+        ctx.save();
+        ctx.fillStyle = petalC[p % petalC.length];
+        ctx.beginPath();
+        ctx.ellipse(fx+Math.cos(a)*r*0.8, fy+Math.sin(a)*r*0.8, r*0.55, r*0.35, a, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.save();
+      ctx.fillStyle = '#fff176';
+      ctx.beginPath(); ctx.arc(fx, fy, r*0.38, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Bottom tier
+    drawTier(cx, H-90*S, 180*S, 55*S, '#fce4ec', '#f8bbd0', '#f48fb1', true);
+    // Middle tier
+    drawTier(cx, H-148*S, 136*S, 45*S, '#fff0f5', '#fce4ec', '#f8bbd0', false);
+    // Top tier
+    drawTier(cx, H-196*S, 96*S, 40*S, '#fce4ec', '#f8bbd0', '#f48fb1', true);
+
+    /* ── CANDLES ── */
+    const candlePositions = [
+      { x: cx-28*S, color:'#ff80ab', waxColor:'#ffb3c6' },
+      { x: cx,      color:'#f48fb1', waxColor:'#fce4ec'  },
+      { x: cx+28*S, color:'#e91e8c', waxColor:'#ff80ab'  },
+    ];
+
+    candlePositions.forEach((c, i) => {
+      const cy2 = H - 196*S - 6*S;
+      const cH  = 28*S;
+
+      // Candle body
+      const cg = ctx.createLinearGradient(c.x-5*S, cy2-cH, c.x+5*S, cy2-cH);
+      cg.addColorStop(0, '#fff');
+      cg.addColorStop(0.4, c.waxColor);
+      cg.addColorStop(1, c.color);
+      ctx.save();
+      ctx.fillStyle = cg;
+      ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 4*S;
+      ctx.beginPath();
+      ctx.roundRect
+        ? ctx.roundRect(c.x-4*S, cy2-cH, 8*S, cH, 3*S)
+        : ctx.rect(c.x-4*S, cy2-cH, 8*S, cH);
+      ctx.fill();
+      ctx.restore();
+
+      // Candle stripe
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1.5*S;
+      for (let s = 0; s < 3; s++) {
+        const sy2 = cy2 - cH + 6*S + s*8*S;
+        ctx.beginPath(); ctx.moveTo(c.x-4*S, sy2); ctx.lineTo(c.x+4*S, sy2); ctx.stroke();
+      }
+      ctx.restore();
+
+      // Wick
+      ctx.save();
+      ctx.strokeStyle = '#5d4037'; ctx.lineWidth = 1.2*S;
+      ctx.beginPath(); ctx.moveTo(c.x, cy2-cH); ctx.lineTo(c.x, cy2-cH-5*S); ctx.stroke();
+      ctx.restore();
+
+      // FLAME — flickers
+      const f = flicker + i * 1.2;
+      const fw = 4*S + Math.sin(f*3.1)*1.2*S;
+      const fh = 11*S + Math.sin(f*2.3)*2*S;
+      const fx2 = c.x + Math.sin(f*1.7)*1.5*S;
+      const fy2 = cy2 - cH - 5*S;
+
+      // Outer flame glow
+      ctx.save();
+      ctx.globalAlpha = 0.3 + Math.sin(f*2)*0.1;
+      const flameGlow = ctx.createRadialGradient(fx2, fy2, 0, fx2, fy2, fw*3.5);
+      flameGlow.addColorStop(0, 'rgba(255,200,50,0.5)');
+      flameGlow.addColorStop(1, 'rgba(255,100,0,0)');
+      ctx.fillStyle = flameGlow;
+      ctx.beginPath(); ctx.arc(fx2, fy2, fw*3.5, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+
+      // Flame body — outer orange
+      ctx.save();
+      const flameOuter = ctx.createRadialGradient(fx2, fy2+fh*0.3, 0, fx2, fy2, fh);
+      flameOuter.addColorStop(0,   'rgba(255,240,180,1)');
+      flameOuter.addColorStop(0.3, 'rgba(255,160,20,1)');
+      flameOuter.addColorStop(0.7, 'rgba(255,60,0,0.8)');
+      flameOuter.addColorStop(1,   'rgba(255,0,0,0)');
+      ctx.fillStyle = flameOuter;
+      ctx.beginPath();
+      ctx.moveTo(fx2, fy2-fh);
+      ctx.bezierCurveTo(fx2+fw*1.2, fy2-fh*0.4, fx2+fw, fy2+fh*0.3, fx2, fy2+fh*0.15);
+      ctx.bezierCurveTo(fx2-fw, fy2+fh*0.3, fx2-fw*1.2, fy2-fh*0.4, fx2, fy2-fh);
+      ctx.fill();
+      ctx.restore();
+
+      // Flame core — bright white/yellow
+      ctx.save();
+      const flameCore = ctx.createRadialGradient(fx2, fy2, 0, fx2, fy2, fh*0.5);
+      flameCore.addColorStop(0,   'rgba(255,255,255,1)');
+      flameCore.addColorStop(0.4, 'rgba(255,240,100,0.9)');
+      flameCore.addColorStop(1,   'rgba(255,160,0,0)');
+      ctx.fillStyle = flameCore;
+      ctx.beginPath();
+      ctx.ellipse(fx2, fy2-fh*0.2, fw*0.55, fh*0.5, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // Cast light on cake top
+      ctx.save();
+      ctx.globalAlpha = 0.12 + Math.sin(f*2)*0.04;
+      const light = ctx.createRadialGradient(c.x, H-196*S, 0, c.x, H-196*S, 35*S);
+      light.addColorStop(0, 'rgba(255,220,100,1)');
+      light.addColorStop(1, 'rgba(255,200,50,0)');
+      ctx.fillStyle = light;
+      ctx.beginPath(); ctx.arc(c.x, H-196*S, 35*S, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+
+    /* ── DECORATIVE RIBBON BOW on bottom tier ── */
+    const bowX = cx, bowY = H - 90*S + 28*S;
+    ctx.save();
+    ctx.fillStyle = '#e91e8c';
+    ctx.shadowColor = '#e91e8c'; ctx.shadowBlur = 6*S;
+    // Left loop
+    ctx.beginPath(); ctx.ellipse(bowX-12*S, bowY, 10*S, 6*S, -0.5, 0, Math.PI*2); ctx.fill();
+    // Right loop
+    ctx.beginPath(); ctx.ellipse(bowX+12*S, bowY, 10*S, 6*S, 0.5, 0, Math.PI*2); ctx.fill();
+    // Center knot
+    ctx.fillStyle = '#ff80ab';
+    ctx.beginPath(); ctx.arc(bowX, bowY, 4*S, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    /* ── SMALL STARS scattered around ── */
+    const starPositions = [
+      {x:cx-75*S, y:H-120*S}, {x:cx+70*S, y:H-105*S},
+      {x:cx-55*S, y:H-175*S}, {x:cx+60*S, y:H-168*S},
+      {x:cx-80*S, y:H-60*S},  {x:cx+80*S, y:H-58*S},
+    ];
+    starPositions.forEach((s, i) => {
+      const pulse = 0.6 + Math.sin(flicker + i)*0.4;
+      ctx.save();
+      ctx.globalAlpha = pulse * 0.8;
+      ctx.fillStyle = '#ffd700';
+      ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 6*S;
+      ctx.font = `${9*S}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('✦', s.x, s.y);
+      ctx.restore();
+    });
+  }
+
+  // Animated flame flicker loop
+  let flicker = 0;
+  (function animCake() {
+    flicker += 0.07;
+    draw(flicker);
+    requestAnimationFrame(animCake);
   })();
 }
 
