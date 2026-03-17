@@ -298,7 +298,7 @@
     <div id="cakeWrap" style="
       opacity:0; transform:translateY(20px);
       transition: opacity .9s ease, transform .9s ease;
-      margin-top: 18px; text-align:center;
+      margin-top: 8px; text-align:center;
     ">
       <canvas id="cakeCanvas" style="display:block; margin:0 auto;"></canvas>
     </div>
@@ -431,8 +431,8 @@ function startTyping() {
 function drawCake() {
   const cv  = document.getElementById('cakeCanvas');
   const isMob = window.innerWidth < 600;
-  const W   = isMob ? 200 : 260;
-  const H   = isMob ? 220 : 280;
+  const W   = isMob ? 140 : 180;
+  const H   = isMob ? 150 : 190;
   cv.width  = W;
   cv.height = H;
   const ctx = cv.getContext('2d');
@@ -547,10 +547,8 @@ function drawCake() {
 
     // Bottom tier
     drawTier(cx, H-90*S, 180*S, 55*S, '#fce4ec', '#f8bbd0', '#f48fb1', true);
-    // Middle tier
-    drawTier(cx, H-148*S, 136*S, 45*S, '#fff0f5', '#fce4ec', '#f8bbd0', false);
-    // Top tier
-    drawTier(cx, H-196*S, 96*S, 40*S, '#fce4ec', '#f8bbd0', '#f48fb1', true);
+    // Top tier (2nd layer)
+    drawTier(cx, H-148*S, 136*S, 50*S, '#fff0f5', '#fce4ec', '#f8bbd0', false);
 
     /* ── CANDLES ── */
     const candlePositions = [
@@ -560,7 +558,7 @@ function drawCake() {
     ];
 
     candlePositions.forEach((c, i) => {
-      const cy2 = H - 196*S - 6*S;
+      const cy2 = H - 148*S - 6*S;
       const cH  = 28*S;
 
       // Candle body
@@ -641,11 +639,11 @@ function drawCake() {
       // Cast light on cake top
       ctx.save();
       ctx.globalAlpha = 0.12 + Math.sin(f*2)*0.04;
-      const light = ctx.createRadialGradient(c.x, H-196*S, 0, c.x, H-196*S, 35*S);
+      const light = ctx.createRadialGradient(c.x, H-148*S, 0, c.x, H-148*S, 35*S);
       light.addColorStop(0, 'rgba(255,220,100,1)');
       light.addColorStop(1, 'rgba(255,200,50,0)');
       ctx.fillStyle = light;
-      ctx.beginPath(); ctx.arc(c.x, H-196*S, 35*S, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x, H-148*S, 35*S, 0, Math.PI*2); ctx.fill();
       ctx.restore();
     });
 
@@ -654,20 +652,17 @@ function drawCake() {
     ctx.save();
     ctx.fillStyle = '#e91e8c';
     ctx.shadowColor = '#e91e8c'; ctx.shadowBlur = 6*S;
-    // Left loop
     ctx.beginPath(); ctx.ellipse(bowX-12*S, bowY, 10*S, 6*S, -0.5, 0, Math.PI*2); ctx.fill();
-    // Right loop
     ctx.beginPath(); ctx.ellipse(bowX+12*S, bowY, 10*S, 6*S, 0.5, 0, Math.PI*2); ctx.fill();
-    // Center knot
     ctx.fillStyle = '#ff80ab';
     ctx.beginPath(); ctx.arc(bowX, bowY, 4*S, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
     /* ── SMALL STARS scattered around ── */
     const starPositions = [
-      {x:cx-75*S, y:H-120*S}, {x:cx+70*S, y:H-105*S},
-      {x:cx-55*S, y:H-175*S}, {x:cx+60*S, y:H-168*S},
-      {x:cx-80*S, y:H-60*S},  {x:cx+80*S, y:H-58*S},
+      {x:cx-80*S, y:H-120*S}, {x:cx+75*S, y:H-110*S},
+      {x:cx-60*S, y:H-165*S}, {x:cx+65*S, y:H-158*S},
+      {x:cx-85*S, y:H-60*S},  {x:cx+82*S, y:H-58*S},
     ];
     starPositions.forEach((s, i) => {
       const pulse = 0.6 + Math.sin(flicker + i)*0.4;
