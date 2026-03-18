@@ -35,6 +35,124 @@
       min-height: 100vh; min-height: -webkit-fill-available;
       padding: clamp(20px,5vw,40px) 16px clamp(16px,4vw,32px);
     }
+/* ══ SAKURA LOCK SCREEN ══ */
+#sakura-lock {
+  position: fixed; inset: 0; z-index: 9000;
+  background: radial-gradient(ellipse at 50% 40%, #1a0010 0%, #0d0008 60%, #000 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; overflow: hidden;
+  transition: opacity 1.2s ease;
+}
+#sakura-lock.hide { opacity: 0; pointer-events: none; }
+
+#sakura-particles {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+}
+
+#sakura-content {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0;
+  width: 90%; max-width: 380px;
+  padding: 20px; box-sizing: border-box;
+}
+
+#sakura-lock-icon {
+  font-size: clamp(52px, 15vw, 82px);
+  margin-bottom: clamp(8px,2vh,14px);
+  animation: sakuraLockPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255,150,180,0.8));
+  text-align: center; line-height: 1; display: block;
+}
+@keyframes sakuraLockPulse {
+  0%,100% { transform: scale(1);    filter: drop-shadow(0 0 16px rgba(255,150,180,0.7)); }
+  50%      { transform: scale(1.08); filter: drop-shadow(0 0 32px rgba(255,180,210,1.0)); }
+}
+
+#sakura-hint {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(13px, 3.5vw, 18px);
+  font-style: italic;
+  color: rgba(255,180,210,0.75);
+  letter-spacing: 2px; margin-bottom: 6px;
+  text-align: center;
+  text-shadow: 0 0 12px rgba(255,120,160,0.5);
+}
+#sakura-clue {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(11px, 2.8vw, 14px);
+  font-style: italic;
+  color: rgba(255,150,180,0.5);
+  letter-spacing: 1px;
+  margin-bottom: clamp(18px,3vh,28px);
+  text-align: center;
+}
+#sakura-input-wrap {
+  width: min(300px, 80vw);
+  display: flex; flex-direction: column; align-items: center;
+  position: relative;
+}
+#sakura-input {
+  width: 100%; padding: 14px 20px;
+  font-size: clamp(15px, 4vw, 18px);
+  background: rgba(30,0,18,0.85);
+  border: 1px solid rgba(255,150,180,0.35);
+  border-radius: 14px; color: #ffb3d1;
+  text-align: center; letter-spacing: 3px; outline: none;
+  box-shadow: 0 0 20px rgba(220,80,130,0.12);
+  transition: border-color .3s, box-shadow .3s;
+  -webkit-appearance: none; font-family: 'Nunito', sans-serif;
+}
+#sakura-input:focus {
+  border-color: rgba(255,150,180,0.75);
+  box-shadow: 0 0 30px rgba(220,80,130,0.35);
+}
+#sakura-input::placeholder { color: rgba(255,150,180,0.3); letter-spacing: 1px; }
+#sakura-btn {
+  margin-top: 14px; width: 100%; padding: 13px;
+  font-size: clamp(14px, 3.5vw, 16px);
+  background: linear-gradient(135deg, #2d0018, #5a0030);
+  border: 1px solid rgba(255,150,180,0.4);
+  border-radius: 14px; color: #ffb3d1;
+  letter-spacing: 2px; cursor: pointer;
+  box-shadow: 0 0 20px rgba(220,80,130,0.2);
+  transition: background .3s, box-shadow .3s, transform .15s;
+  -webkit-appearance: none; font-family: 'Nunito', sans-serif;
+}
+#sakura-btn:hover, #sakura-btn:active {
+  background: linear-gradient(135deg, #3d0022, #7a0040);
+  box-shadow: 0 0 35px rgba(255,100,150,0.45);
+  transform: scale(1.02);
+}
+#sakura-error {
+  margin-top: 12px;
+  font-size: clamp(12px, 3vw, 14px);
+  color: #ff6b8a; letter-spacing: 1px; min-height: 20px;
+  text-shadow: 0 0 10px rgba(255,100,130,0.5);
+  opacity: 0; transition: opacity .3s; text-align: center;
+}
+#sakura-error.show { opacity: 1; }
+#sakura-success {
+  font-size: clamp(16px, 4vw, 22px);
+  color: #ffb3d1; letter-spacing: 3px;
+  opacity: 0; transition: opacity .5s; text-align: center;
+  text-shadow: 0 0 20px rgba(255,150,180,0.9);
+  margin-top: 10px;
+}
+#sakura-success.show { opacity: 1; }
+@keyframes sakuraShake {
+  0%,100%{ transform: translateX(0); }
+  20%    { transform: translateX(-8px); }
+  40%    { transform: translateX(8px); }
+  60%    { transform: translateX(-6px); }
+  80%    { transform: translateX(6px); }
+}
+.sakura-shake { animation: sakuraShake .4s ease; }
+
     #intro {
       position: fixed; inset: 0; z-index: 3000;
       background: radial-gradient(ellipse at 50% 40%, #6b0a2a 0%, #3a0518 45%, #0d0008 100%);
@@ -262,6 +380,22 @@
 </head>
 <body>
 
+<!-- SAKURA LOCK SCREEN -->
+<div id="sakura-lock">
+  <canvas id="sakura-particles"></canvas>
+  <div id="sakura-content">
+    <div id="sakura-lock-icon">🔐</div>
+    <div id="sakura-hint">Enter the secret word</div>
+    <div id="sakura-clue">Hint: Our turtle name</div>
+    <div id="sakura-input-wrap">
+      <input id="sakura-input" type="text" placeholder="Type here..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <button id="sakura-btn">UNLOCK ✦</button>
+      <div id="sakura-error">Wrong password. Try again! 🔒</div>
+      <div id="sakura-success">🔓 Opening for you...</div>
+    </div>
+  </div>
+</div>
+
 <div id="intro">
   <canvas id="intro-particles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
   <div id="intro-line"></div>
@@ -308,6 +442,129 @@
 </div>
 
 <script>
+/* ══ SAKURA LOCK SCREEN ══ */
+(function() {
+  const sc  = document.getElementById('sakura-particles');
+  const sx  = sc.getContext('2d');
+  let active = true;
+  function resizeSC(){ sc.width=innerWidth; sc.height=innerHeight; }
+  resizeSC(); window.addEventListener('resize', resizeSC);
+
+  // Falling sakura petals
+  const petals = Array.from({length: 55}, () => ({
+    x:     Math.random() * innerWidth,
+    y:     Math.random() * innerHeight,
+    r:     2.5 + Math.random() * 4,
+    alpha: 0.2 + Math.random() * 0.6,
+    vx:    (Math.random() - 0.5) * 0.8,
+    vy:    0.4 + Math.random() * 1.0,
+    spin:  Math.random() * Math.PI * 2,
+    spinV: (Math.random() - 0.5) * 0.06,
+    color: `hsl(${Math.round(340+Math.random()*30)},${Math.round(70+Math.random()*25)}%,${Math.round(75+Math.random()*20)}%)`,
+  }));
+
+  // Floating pink glow particles
+  const glows = Array.from({length: 30}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: 0.8 + Math.random() * 2.2,
+    alpha: 0.15 + Math.random() * 0.5,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.012 + Math.random() * 0.025,
+    vx: (Math.random()-0.5)*0.0008, vy: (Math.random()-0.5)*0.0006,
+  }));
+
+  (function drawSakura() {
+    if (!active) return;
+    sx.clearRect(0, 0, sc.width, sc.height);
+
+    // Falling petals
+    petals.forEach(p => {
+      p.x += p.vx + Math.sin(p.spin * 0.3) * 0.4;
+      p.y += p.vy;
+      p.spin += p.spinV;
+      if (p.y > sc.height + 10) { p.y = -10; p.x = Math.random() * sc.width; }
+      sx.save();
+      sx.globalAlpha = p.alpha;
+      sx.translate(p.x, p.y);
+      sx.rotate(p.spin);
+      // Draw petal shape
+      sx.fillStyle = p.color;
+      sx.shadowColor = p.color;
+      sx.shadowBlur = 8;
+      sx.beginPath();
+      sx.ellipse(0, 0, p.r, p.r * 1.6, 0, 0, Math.PI * 2);
+      sx.fill();
+      sx.restore();
+    });
+
+    // Glowing dots
+    glows.forEach(g => {
+      g.phase += g.speed;
+      g.x += g.vx; g.y += g.vy;
+      if (g.x < 0) g.x = 1; if (g.x > 1) g.x = 0;
+      if (g.y < 0) g.y = 1; if (g.y > 1) g.y = 0;
+      const a = g.alpha * (0.3 + Math.abs(Math.sin(g.phase)) * 0.7);
+      sx.save();
+      sx.globalAlpha = a;
+      sx.fillStyle = '#ffb3d1';
+      sx.shadowColor = '#ff80ab';
+      sx.shadowBlur = 10;
+      sx.beginPath();
+      sx.arc(g.x * sc.width, g.y * sc.height, g.r, 0, Math.PI * 2);
+      sx.fill();
+      sx.restore();
+    });
+
+    requestAnimationFrame(drawSakura);
+  })();
+
+  // Stop when hidden
+  const obs = new MutationObserver(() => {
+    if (document.getElementById('sakura-lock').classList.contains('hide')) {
+      active = false;
+    }
+  });
+  obs.observe(document.getElementById('sakura-lock'), { attributes: true });
+})();
+
+/* ══ SAKURA PASSWORD ══ */
+const SAKURA_PASSWORD = 'Nanook';
+const sakuraInput = document.getElementById('sakura-input');
+const sakuraBtn   = document.getElementById('sakura-btn');
+const sakuraErr   = document.getElementById('sakura-error');
+const sakuraSucc  = document.getElementById('sakura-success');
+const sakuraWrap  = document.getElementById('sakura-input-wrap');
+
+function trySakuraUnlock() {
+  const val = sakuraInput.value.trim();
+  if (val.toLowerCase() === SAKURA_PASSWORD.toLowerCase()) {
+    sakuraErr.classList.remove('show');
+    sakuraInput.style.borderColor = 'rgba(255,150,180,0.9)';
+    sakuraInput.style.boxShadow   = '0 0 30px rgba(255,100,150,0.5)';
+    sakuraBtn.disabled = true;
+    document.getElementById('sakura-lock-icon').textContent = '🔓';
+    sakuraSucc.classList.add('show');
+    setTimeout(() => {
+      document.getElementById('sakura-lock').classList.add('hide');
+      setTimeout(() => {
+        document.getElementById('sakura-lock').style.display = 'none';
+      }, 1300);
+    }, 900);
+  } else {
+    sakuraErr.classList.remove('show');
+    void sakuraErr.offsetWidth;
+    sakuraErr.classList.add('show');
+    sakuraWrap.classList.remove('sakura-shake');
+    void sakuraWrap.offsetWidth;
+    sakuraWrap.classList.add('sakura-shake');
+    sakuraInput.value = '';
+    setTimeout(() => sakuraErr.classList.remove('show'), 2500);
+  }
+}
+sakuraBtn.addEventListener('click', trySakuraUnlock);
+sakuraInput.addEventListener('keydown', e => { if (e.key === 'Enter') trySakuraUnlock(); });
+setTimeout(() => sakuraInput.focus(), 400);
+
 /* ══ INTRO SILVER SHIMMER PARTICLES ══ */
 (function() {
   const ipc  = document.getElementById('intro-particles');
@@ -392,16 +649,260 @@ setTimeout(runStep, 400);
 const MESSAGE = `May love and laughter\nLight your days\nAnd warm your heart and home;\n\nMay good and faithful friends be yours\nWherever you may roam;\n\nMay peace and plenty bless your world\nWith joy that long endures;\n\nMay all life's passing seasons\nBring the best to you and yours!\n\n🌸 Happy Birthday, Cicy! 🌸`;
 
 function revealCard() {
-  document.getElementById('mainCard').classList.add('visible');
-  [['word-happy',300],['word-bday',750],['word-to',1200],['word-you',1650]]
-    .forEach(([id,d])=>setTimeout(()=>document.getElementById(id).classList.add('show'),d));
-  setTimeout(()=>document.getElementById('nameEl').classList.add('show'),    2200);
-  setTimeout(()=>document.getElementById('dividerEl').classList.add('show'), 2600);
-  setTimeout(()=>{ document.getElementById('msgBox').classList.add('show'); startTyping(); }, 3000);
-  setTimeout(()=>document.getElementById('floralBot').classList.add('show'), 3400);
-  document.getElementById('confetti-canvas').classList.add('show');
-  initHeart();
-  // NO fireworks here — fireworks only start after heart reaches center
+  showRoseBloom(() => {
+    document.getElementById('mainCard').classList.add('visible');
+    [['word-happy',300],['word-bday',750],['word-to',1200],['word-you',1650]]
+      .forEach(([id,d])=>setTimeout(()=>document.getElementById(id).classList.add('show'),d));
+    setTimeout(()=>document.getElementById('nameEl').classList.add('show'),    2200);
+    setTimeout(()=>document.getElementById('dividerEl').classList.add('show'), 2600);
+    setTimeout(()=>{ document.getElementById('msgBox').classList.add('show'); startTyping(); }, 3000);
+    setTimeout(()=>document.getElementById('floralBot').classList.add('show'), 3400);
+    document.getElementById('confetti-canvas').classList.add('show');
+    // NO initHeart here — heart appears after sakura tree
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ROSE BLOOM — closed bud, tap to bloom open
+   Rose grows from bud → full bloom → card reveals
+══════════════════════════════════════════════ */
+function showRoseBloom(onDone) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    z-index:5000;background:#000;cursor:pointer;
+    opacity:0;transition:opacity .8s ease;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+  `;
+
+  const isMob = window.innerWidth < 600;
+  const EW = isMob ? 220 : 300;  // envelope width
+  const EH = EW * 0.65;          // envelope height
+
+  // Canvas for envelope
+  const ec = document.createElement('canvas');
+  ec.width  = EW; ec.height = EH;
+  ec.style.cssText = `display:block;cursor:pointer;`;
+  wrap.appendChild(ec);
+  const ex = ec.getContext('2d');
+
+  // Prompt text
+  const label = document.createElement('div');
+  label.style.cssText = `
+    margin-top:clamp(16px,3vh,24px);
+    font-family:'Cormorant Garamond',serif; font-style:italic;
+    font-size:clamp(14px,3.5vw,20px);
+    color:rgba(255,180,210,0.9); letter-spacing:2px;
+    text-align:center; text-shadow:0 0 14px rgba(255,120,160,0.6);
+  `;
+
+  const hint = document.createElement('div');
+  hint.style.cssText = `
+    margin-top:8px;
+    font-family:'Cormorant Garamond',serif; font-style:italic;
+    font-size:clamp(11px,2.5vw,14px);
+    color:rgba(255,150,180,0.45); letter-spacing:2px;
+    text-align:center; opacity:0; transition:opacity .8s ease;
+  `;
+  hint.textContent = '— tap to open —';
+  wrap.appendChild(label);
+  wrap.appendChild(hint);
+
+  // Falling sakura petals background
+  const bg = document.createElement('canvas');
+  bg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+  bg.width=window.innerWidth; bg.height=window.innerHeight;
+  wrap.insertBefore(bg, ec.parentNode ? null : ec);
+  wrap.insertBefore(bg, wrap.firstChild);
+  ec.style.position='relative'; ec.style.zIndex='1';
+  label.style.position='relative'; label.style.zIndex='1';
+  hint.style.position='relative'; hint.style.zIndex='1';
+  const bx = bg.getContext('2d');
+  const bgPetals = Array.from({length:40},()=>({
+    x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+    r:2+Math.random()*3, vx:(Math.random()-.5)*.6, vy:.3+Math.random()*.8,
+    spin:Math.random()*Math.PI*2, spinV:(Math.random()-.5)*.05,
+    alpha:.15+Math.random()*.4,
+    color:`hsl(${Math.round(335+Math.random()*30)},${Math.round(70+Math.random()*20)}%,${Math.round(75+Math.random()*18)}%)`
+  }));
+
+  document.body.appendChild(wrap);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ wrap.style.opacity='1'; }));
+
+  // ── ENVELOPE STATE ──
+  let phase     = 'idle';   // idle → open → done
+  let lidAngle  = 0;        // 0=closed, 1=fully open (0..1)
+  let lidDir    = 0;
+  let doneCalled= false;
+  let shimmer   = 0;
+
+  // Type label
+  const PROMPT  = 'A message for you...';
+  let pi = 0;
+  function typeLabel(){
+    if(pi<PROMPT.length){ label.textContent+=PROMPT[pi++]; setTimeout(typeLabel,65); }
+    else setTimeout(()=>{ hint.style.opacity='1'; },400);
+  }
+  setTimeout(typeLabel, 500);
+
+  function drawEnvelope(t) {
+    ex.clearRect(0,0,EW,EH);
+    const W=EW, H=EH;
+    const r=10; // corner radius
+
+    // ── ENVELOPE BODY ──
+    ex.save();
+    const bodyG=ex.createLinearGradient(0,0,W,H);
+    bodyG.addColorStop(0,'#2d0018');
+    bodyG.addColorStop(0.5,'#5a0030');
+    bodyG.addColorStop(1,'#2d0018');
+    ex.fillStyle=bodyG;
+    ex.shadowColor='rgba(255,100,150,0.5)'; ex.shadowBlur=20;
+    ex.beginPath();
+    ex.moveTo(r,0); ex.lineTo(W-r,0); ex.quadraticCurveTo(W,0,W,r);
+    ex.lineTo(W,H-r); ex.quadraticCurveTo(W,H,W-r,H);
+    ex.lineTo(r,H); ex.quadraticCurveTo(0,H,0,H-r);
+    ex.lineTo(0,r); ex.quadraticCurveTo(0,0,r,0);
+    ex.closePath(); ex.fill();
+    // Border
+    ex.strokeStyle='rgba(255,150,180,0.45)'; ex.lineWidth=1.5; ex.stroke();
+    ex.restore();
+
+    // ── ENVELOPE INNER DIAGONAL LINES (bottom V) ──
+    ex.save();
+    ex.globalAlpha=0.35;
+    ex.strokeStyle='rgba(255,150,180,0.5)'; ex.lineWidth=1;
+    // Left diagonal
+    ex.beginPath(); ex.moveTo(0,0); ex.lineTo(W/2,H*.6); ex.stroke();
+    // Right diagonal
+    ex.beginPath(); ex.moveTo(W,0); ex.lineTo(W/2,H*.6); ex.stroke();
+    // Bottom left
+    ex.beginPath(); ex.moveTo(0,H); ex.lineTo(W/2,H*.6); ex.stroke();
+    // Bottom right
+    ex.beginPath(); ex.moveTo(W,H); ex.lineTo(W/2,H*.6); ex.stroke();
+    ex.restore();
+
+    // ── WAX SEAL ──
+    if(lidAngle<0.3){
+      const sealX=W/2, sealY=H*.55;
+      ex.save();
+      const sealG=ex.createRadialGradient(sealX-4,sealY-4,0,sealX,sealY,18);
+      sealG.addColorStop(0,'#ff80ab'); sealG.addColorStop(0.5,'#c2185b'); sealG.addColorStop(1,'#880033');
+      ex.fillStyle=sealG; ex.shadowColor='#ff80ab'; ex.shadowBlur=15;
+      ex.beginPath(); ex.arc(sealX,sealY,14*(1-lidAngle*3),0,Math.PI*2); ex.fill();
+      // Seal letter C
+      ex.globalAlpha=1-lidAngle*3;
+      ex.fillStyle='rgba(255,220,230,0.9)'; ex.shadowBlur=0;
+      ex.font=`bold ${isMob?10:13}px Georgia,serif`;
+      ex.textAlign='center'; ex.textBaseline='middle';
+      ex.fillText('C',sealX,sealY);
+      ex.restore();
+    }
+
+    // ── SHIMMERING RIBBON ──
+    shimmer=(shimmer+0.04)%1;
+    const ribW=W*.08;
+    ex.save();
+    const ribG=ex.createLinearGradient(W/2-ribW/2,0,W/2+ribW/2,0);
+    ribG.addColorStop(0,'rgba(255,100,150,0.3)');
+    ribG.addColorStop(0.4,'rgba(255,200,220,0.9)');
+    ribG.addColorStop(0.6,'rgba(255,200,220,0.9)');
+    ribG.addColorStop(1,'rgba(255,100,150,0.3)');
+    ex.fillStyle=ribG; ex.shadowColor='#ffb3d1'; ex.shadowBlur=8;
+    ex.fillRect(W/2-ribW/2,0,ribW,H);
+    ex.restore();
+
+    // ── LID — flips open ──
+    ex.save();
+    ex.translate(W/2, 0);
+    // Perspective flip: scaleY goes 1→0→-1 as lid opens
+    const scaleY = Math.cos(lidAngle * Math.PI);
+    ex.scale(1, scaleY);
+    // Lid triangle
+    const lidG=ex.createLinearGradient(-W/2,0,W/2,H*.55);
+    lidG.addColorStop(0,'#3d0022'); lidG.addColorStop(0.5,'#6a0035'); lidG.addColorStop(1,'#3d0022');
+    ex.fillStyle=lidG;
+    ex.shadowColor='rgba(255,100,150,0.4)'; ex.shadowBlur=10;
+    ex.beginPath(); ex.moveTo(-W/2,0); ex.lineTo(0,H*.55); ex.lineTo(W/2,0); ex.closePath(); ex.fill();
+    ex.strokeStyle='rgba(255,150,180,0.4)'; ex.lineWidth=1; ex.stroke();
+    // Lid ribbon continuation
+    ex.fillStyle=ribG; ex.shadowColor='#ffb3d1'; ex.shadowBlur=8;
+    ex.fillRect(-ribW/2,0,ribW,H*.55);
+    ex.restore();
+
+    // ── SPARKLES when opening ──
+    if(phase==='open' && lidAngle>0.3){
+      const sp=(lidAngle-.3)/.7;
+      for(let s=0;s<6;s++){
+        const sa=(s/6)*Math.PI*2+t*2;
+        const sr=W*.3*sp;
+        ex.save();
+        ex.globalAlpha=sp*(0.5+Math.abs(Math.sin(t*3+s))*.5);
+        ex.fillStyle='#ffd700'; ex.shadowColor='#ffd700'; ex.shadowBlur=8;
+        ex.font=`${isMob?9:11}px serif`; ex.textAlign='center';
+        ex.fillText('✦',W/2+Math.cos(sa)*sr,H/2+Math.sin(sa)*sr*.6);
+        ex.restore();
+      }
+    }
+
+    // ── GLOW PULSE when idle ──
+    const pulse=0.5+Math.abs(Math.sin(t*1.8))*.5;
+    ex.save();
+    ex.globalAlpha=pulse*0.3;
+    ex.strokeStyle='rgba(255,150,180,0.6)'; ex.lineWidth=2;
+    ex.shadowColor='#ff80ab'; ex.shadowBlur=15;
+    ex.beginPath();
+    ex.moveTo(r,0); ex.lineTo(W-r,0); ex.quadraticCurveTo(W,0,W,r);
+    ex.lineTo(W,H-r); ex.quadraticCurveTo(W,H,W-r,H);
+    ex.lineTo(r,H); ex.quadraticCurveTo(0,H,0,H-r);
+    ex.lineTo(0,r); ex.quadraticCurveTo(0,0,r,0);
+    ex.closePath(); ex.stroke();
+    ex.restore();
+  }
+
+  let rafId;
+  function loop(){
+    const t=performance.now()/1000;
+
+    // Bg petals
+    bx.clearRect(0,0,bg.width,bg.height);
+    bgPetals.forEach(p=>{
+      p.x+=p.vx+Math.sin(p.spin*.3)*.3; p.y+=p.vy; p.spin+=p.spinV;
+      if(p.y>bg.height+10){p.y=-10;p.x=Math.random()*bg.width;}
+      bx.save(); bx.globalAlpha=p.alpha; bx.translate(p.x,p.y); bx.rotate(p.spin);
+      bx.fillStyle=p.color; bx.shadowColor=p.color; bx.shadowBlur=5;
+      bx.beginPath(); bx.ellipse(0,0,p.r,p.r*1.6,0,0,Math.PI*2); bx.fill(); bx.restore();
+    });
+
+    // Envelope open animation
+    if(phase==='open'){
+      lidAngle=Math.min(lidAngle+0.025,1);
+      if(lidAngle>=1 && !doneCalled){
+        doneCalled=true;
+        setTimeout(()=>{
+          let a=1;
+          const fi=setInterval(()=>{
+            a-=.03; wrap.style.opacity=Math.max(0,a);
+            if(a<=0){clearInterval(fi);wrap.remove();onDone();}
+          },20);
+        },600);
+      }
+    }
+
+    drawEnvelope(t);
+    rafId=requestAnimationFrame(loop);
+  }
+  loop();
+
+  function handleTap(){
+    if(phase!=='idle') return;
+    phase='open'; lidAngle=0;
+    label.style.opacity='0'; hint.style.opacity='0';
+  }
+  ec.addEventListener('click', handleTap);
+  wrap.addEventListener('click', handleTap);
+  wrap.addEventListener('touchstart',e=>{e.preventDefault();handleTap();},{passive:false});
 }
 
 function startTyping() {
@@ -426,14 +927,460 @@ function startTyping() {
         card.style.opacity    = '0';
         card.style.transform  = 'translateY(-30px) scale(0.96)';
 
-        // Step 3: After card fades, animate heart rising to center
+        // Step 3: After card fades → stop confetti → sakura game → tree → heart
         setTimeout(() => {
           card.style.display = 'none';
-          window.moveHeartToCenter();
+          confettiActive = false;
+          ctx2d.clearRect(0, 0, cv.width, cv.height);
+          cv.style.display = 'none';
+          showSakuraGame(() => {
+            showSakuraTree(() => {
+              // Init heart AFTER sakura tree
+              initHeart();
+              window.moveHeartToCenter();
+            });
+          });
         }, 1600);
       }, 3500);
     }
   })();
+}
+
+/* ══════════════════════════════════════════════
+   SAKURA CATCHING GAME
+   Petals fall from top — tap 5 to catch them
+══════════════════════════════════════════════ */
+function showSakuraGame(onDone) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `
+    position:fixed;inset:0;z-index:6000;
+    background:radial-gradient(ellipse at 50% 30%,#1a0010 0%,#0d0008 60%,#000 100%);
+    overflow:hidden; opacity:0; transition:opacity .8s ease;
+  `;
+
+  const gc = document.createElement('canvas');
+  gc.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+  wrap.appendChild(gc);
+
+  // Score display
+  const scoreEl = document.createElement('div');
+  scoreEl.style.cssText = `
+    position:absolute; top:clamp(16px,4vh,28px); left:50%;
+    transform:translateX(-50%);
+    font-family:'Cormorant Garamond',serif; font-style:italic;
+    font-size:clamp(20px,5vw,28px); color:#ffb3d1;
+    letter-spacing:3px; text-align:center;
+    text-shadow:0 0 16px rgba(255,120,160,0.7);
+    pointer-events:none; z-index:2;
+    background:rgba(0,0,0,0.45);
+    padding:6px 20px; border-radius:20px;
+    backdrop-filter:blur(4px);
+  `;
+  wrap.appendChild(scoreEl);
+
+  // Instruction
+  const instrEl = document.createElement('div');
+  instrEl.style.cssText = `
+    position:absolute; top:clamp(58px,12vh,80px); left:50%;
+    transform:translateX(-50%);
+    font-family:'Cormorant Garamond',serif; font-style:italic;
+    font-size:clamp(12px,3vw,15px); color:rgba(255,180,210,0.7);
+    letter-spacing:2px; text-align:center; white-space:nowrap;
+    pointer-events:none; z-index:2;
+    background:rgba(0,0,0,0.35);
+    padding:4px 14px; border-radius:14px;
+  `;
+  instrEl.textContent = '— tap the sakura petals —';
+  wrap.appendChild(instrEl);
+
+  document.body.appendChild(wrap);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ wrap.style.opacity='1'; }));
+
+  const gx = gc.getContext('2d');
+  gc.width  = window.innerWidth;
+  gc.height = window.innerHeight;
+  window.addEventListener('resize', ()=>{
+    gc.width=window.innerWidth; gc.height=window.innerHeight;
+  });
+
+  const isMob = innerWidth < 600;
+  let caught   = 0;
+  const NEED   = 5;
+  let gameDone = false;
+
+  // Sakura petals falling
+  const petals = [];
+  function spawnPetal() {
+    const size  = isMob ? 20+Math.random()*16 : 26+Math.random()*20;
+    const safeY = isMob ? 110 : 90;  // below the score/instruction text
+    petals.push({
+      x:      20 + Math.random()*(innerWidth-40),
+      y:      -size,
+      vy:     1.4 + Math.random()*1.8,
+      vx:     (Math.random()-.5)*.8,
+      spin:   Math.random()*Math.PI*2,
+      spinV:  (Math.random()-.5)*.04,
+      size,
+      alpha:  .85+Math.random()*.15,
+      caught: false,
+      popT:   0,
+      safeY,  // petals visually pass through but collision only below safeY
+      color:  `hsl(${Math.round(335+Math.random()*25)},${Math.round(75+Math.random()*20)}%,${Math.round(78+Math.random()*15)}%)`,
+    });
+  }
+
+  // Spawn initial petals staggered
+  for(let i=0;i<6;i++) setTimeout(()=>spawnPetal(), i*400);
+  // Keep spawning
+  const spawnInt = setInterval(()=>{ if(!gameDone) spawnPetal(); }, 900);
+
+  function updateScore() {
+    scoreEl.textContent = `🌸 ${caught} / ${NEED}`;
+  }
+  updateScore();
+
+  // Draw realistic sakura flower
+  function drawPetal(ctx, x, y, size, spin, alpha, color, pop) {
+    ctx.save();
+    ctx.globalAlpha = alpha * (pop > 0 ? Math.max(0, 1-pop*3) : 1);
+    ctx.translate(x, y);
+    ctx.rotate(spin);
+    const sc = pop > 0 ? 1+pop*2 : 1;
+    ctx.scale(sc, sc);
+
+    for(let p=0;p<5;p++){
+      const a = (p/5)*Math.PI*2;
+      ctx.save();
+      ctx.rotate(a);
+      // Realistic heart-shaped petal with notch at tip
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-size*.38, -size*.2,  -size*.42, -size*.75, 0,       -size*.85);
+      ctx.bezierCurveTo( size*.42, -size*.75,  size*.38,  -size*.2,  0,        0);
+      const pg = ctx.createLinearGradient(0, 0, 0, -size*.85);
+      pg.addColorStop(0,   '#fff0f5');
+      pg.addColorStop(0.3, color);
+      pg.addColorStop(1,   color);
+      ctx.fillStyle = pg;
+      ctx.shadowColor = color; ctx.shadowBlur = 8;
+      ctx.fill();
+      // Petal vein
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-size*.75);
+      ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=0.8; ctx.stroke();
+      // Notch at tip
+      ctx.beginPath();
+      ctx.arc(0, -size*.85, size*.08, 0, Math.PI*2);
+      ctx.fillStyle='rgba(255,150,180,0.5)'; ctx.shadowBlur=0; ctx.fill();
+      ctx.restore();
+    }
+    // Stamens — small yellow dots
+    for(let s=0;s<6;s++){
+      const sa=(s/6)*Math.PI*2;
+      ctx.save();
+      ctx.fillStyle='#fff176'; ctx.shadowColor='#ffd700'; ctx.shadowBlur=4;
+      ctx.beginPath();
+      ctx.arc(Math.cos(sa)*size*.18, Math.sin(sa)*size*.18, size*.05, 0, Math.PI*2);
+      ctx.fill(); ctx.restore();
+    }
+    // Pink center
+    ctx.fillStyle='#ffb3c8'; ctx.shadowColor='#ff80ab'; ctx.shadowBlur=6;
+    ctx.beginPath(); ctx.arc(0,0,size*.1,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Catch particles burst
+  const bursts = [];
+  function addBurst(x, y, color) {
+    for(let i=0;i<10;i++) bursts.push({
+      x, y, vx:(Math.random()-.5)*6, vy:-(1+Math.random()*4),
+      alpha:1, r:2+Math.random()*3, color,
+    });
+  }
+
+  let rafId;
+  function gameLoop() {
+    gx.clearRect(0,0,gc.width,gc.height);
+
+    // Update & draw petals
+    for(let i=petals.length-1;i>=0;i--){
+      const p = petals[i];
+      if(p.caught){
+        p.popT += 0.08;
+        if(p.popT > 0.4){ petals.splice(i,1); continue; }
+      } else {
+        p.x += p.vx + Math.sin(p.spin*.4)*.5;
+        p.y += p.vy;
+        p.spin += p.spinV;
+        if(p.y > gc.height+p.size){ petals.splice(i,1); continue; }
+      }
+      // Fade petals in the text safe zone at top
+      const safeZone = p.safeY || 110;
+      const fadeAlpha = p.y < safeZone
+        ? p.alpha * Math.max(0, p.y / safeZone)
+        : p.alpha;
+      drawPetal(gx, p.x, p.y, p.size, p.spin, fadeAlpha, p.color, p.popT);
+    }
+
+    // Burst particles
+    for(let i=bursts.length-1;i>=0;i--){
+      const b = bursts[i];
+      b.x+=b.vx; b.y+=b.vy; b.vy+=.15; b.alpha-=.04;
+      if(b.alpha<=0){bursts.splice(i,1);continue;}
+      gx.save(); gx.globalAlpha=b.alpha; gx.fillStyle=b.color;
+      gx.shadowColor=b.color; gx.shadowBlur=6;
+      gx.beginPath(); gx.arc(b.x,b.y,b.r,0,Math.PI*2); gx.fill(); gx.restore();
+    }
+
+    if(!gameDone) rafId = requestAnimationFrame(gameLoop);
+  }
+  gameLoop();
+
+  // Tap to catch
+  function handleTap(e) {
+    if(gameDone) return;
+    const points = e.changedTouches
+      ? Array.from(e.changedTouches)
+      : [{ clientX: e.clientX, clientY: e.clientY }];
+    points.forEach(touch => {
+      const tapX = touch.clientX, tapY = touch.clientY;
+      for(let i=petals.length-1;i>=0;i--){
+        const p = petals[i];
+        if(p.caught) continue;
+        const dx=tapX-p.x, dy=tapY-p.y;
+        if(Math.sqrt(dx*dx+dy*dy) < p.size*1.4){
+          p.caught=true; p.popT=0;
+          addBurst(p.x, p.y, p.color);
+          caught++;
+          updateScore();
+          if(caught >= NEED){
+            gameDone=true;
+            clearInterval(spawnInt);
+            cancelAnimationFrame(rafId);
+            scoreEl.textContent = '🌸 5 / 5  ✨';
+            scoreEl.style.color = '#ffd700';
+            scoreEl.style.textShadow = '0 0 20px rgba(255,215,0,0.9)';
+            instrEl.textContent = 'You caught them all! 🌸';
+            instrEl.style.color = 'rgba(255,215,0,0.75)';
+            // Short 600ms pause to show success, then instant transition
+            setTimeout(()=>{ wrap.remove(); onDone(); }, 600);
+          }
+          break;
+        }
+      }
+    });
+  }
+  wrap.addEventListener('click', handleTap);
+  wrap.addEventListener('touchstart', e=>{e.preventDefault();handleTap(e);},{passive:false});
+}
+
+/* ══════════════════════════════════════════════
+   SAKURA TREE — full tree blooms on screen
+   Branches drawn first, then flowers bloom on each
+══════════════════════════════════════════════ */
+function showSakuraTree(onDone) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:6000;background:#000;overflow:hidden;';
+  document.body.appendChild(wrap);
+
+  const cv = document.createElement('canvas');
+  const W  = window.innerWidth;
+  const H  = window.innerHeight;
+  cv.width = W; cv.height = H;
+  cv.style.cssText = 'position:absolute;top:0;left:0;';
+  wrap.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  const isMob = W < 600;
+  const CX = W / 2;
+
+  const COLS = ['#ffb3d1','#f48fb1','#fce4ec','#ff80ab','#f06292','#fff0f5','#ffcdd2'];
+  const moonR = Math.min(W, H) * (isMob ? 0.28 : 0.24);
+
+  // Sakura petals — lots of them raining
+  const petals = Array.from({length: isMob?80:120}, () => ({
+    x:     Math.random() * W,
+    y:     -20 - Math.random() * H,
+    vx:    (Math.random()-.5) * 1.2,
+    vy:    0.6 + Math.random() * 1.4,
+    spin:  Math.random() * Math.PI * 2,
+    spinV: (Math.random()-.5) * 0.05,
+    size:  isMob ? 5+Math.random()*7 : 7+Math.random()*9,
+    alpha: 0.4 + Math.random() * 0.6,
+    color: COLS[Math.floor(Math.random()*COLS.length)],
+    sway:  Math.random() * Math.PI * 2,
+    swayS: 0.015 + Math.random() * 0.02,
+  }));
+
+  // Moon silhouette branch shapes (simple curved lines)
+  function drawMoonBranch(ctx, x, y, a, len, dep) {
+    if (dep > 3 || len < 6) return;
+    const ex = x + Math.cos(a)*len, ey = y + Math.sin(a)*len;
+    ctx.save();
+    ctx.strokeStyle = `rgba(20,5,15,${0.7-dep*0.15})`;
+    ctx.lineWidth   = Math.max(0.8, 3.5 - dep*0.9);
+    ctx.lineCap     = 'round';
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(ex,ey); ctx.stroke();
+    ctx.restore();
+    if (dep < 3) {
+      drawMoonBranch(ctx, ex, ey, a-0.4+(Math.random()-.5)*.15, len*0.65, dep+1);
+      drawMoonBranch(ctx, ex, ey, a+0.35+(Math.random()-.5)*.15, len*0.60, dep+1);
+    }
+  }
+
+  function drawSakura(x, y, size, spin, alpha, color) {
+    if (alpha<=0) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y); ctx.rotate(spin);
+    for (let p=0;p<5;p++) {
+      const a=(p/5)*Math.PI*2;
+      ctx.save(); ctx.rotate(a);
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.bezierCurveTo(-size*.32,-size*.15,-size*.35,-size*.68,0,-size*.78);
+      ctx.bezierCurveTo(size*.35,-size*.68,size*.32,-size*.15,0,0);
+      const pg=ctx.createLinearGradient(0,0,0,-size*.78);
+      pg.addColorStop(0,'#fff8fa'); pg.addColorStop(0.5,color); pg.addColorStop(1,color);
+      ctx.fillStyle=pg; ctx.shadowColor=color; ctx.shadowBlur=4;
+      ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle='#fff9e6'; ctx.shadowColor='#ffd700'; ctx.shadowBlur=4;
+    ctx.beginPath(); ctx.arc(0,0,size*.1,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Phase state
+  let time    = 0;
+  let moonY   = H + moonR*1.5;
+  let moonTargY = H * (isMob ? 0.38 : 0.40);
+  let wrapA   = 0;
+  let fadeA   = 1;
+  let phase   = 'rise';   // rise → type → fade
+  let holdT   = 0;
+
+  // Typing message state
+  const LINE1 = 'For you, Cicy 🌸';
+  const LINE2 = 'Like the moon, you light up every room you enter 🌸';
+  let typed1  = '', typed2  = '';
+  let t1i     = 0,  t2i     = 0;
+  let msgA    = 0;
+  let typingDone = false;
+
+  function startTyping() {
+    msgA = 0;
+    // Fade in text container first
+    let fa = 0;
+    const fi = setInterval(()=>{ fa=Math.min(fa+0.05,1); msgA=fa; if(fa>=1) clearInterval(fi); },20);
+    // Type line 1
+    function typeLine1() {
+      if (t1i < LINE1.length) { typed1 += LINE1[t1i++]; setTimeout(typeLine1, 18); }
+      else setTimeout(typeLine2, 300);
+    }
+    // Type line 2
+    function typeLine2() {
+      if (t2i < LINE2.length) { typed2 += LINE2[t2i++]; setTimeout(typeLine2, 18); }
+      else { typingDone = true; setTimeout(()=>{ phase='fade'; }, 1500); }
+    }
+    setTimeout(typeLine1, 300);
+  }
+
+  function loop() {
+    time += 0.016;
+
+    // Background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,W,H);
+    const sky = ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#000008'); sky.addColorStop(0.4,'#0a0015'); sky.addColorStop(1,'#1a0020');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+    // Stars
+    ctx.save();
+    for (let s=0;s<60;s++) {
+      const sx=((s*137.5)%W), sy=((s*93.7)%(H*0.65));
+      const sa=0.3+Math.abs(Math.sin(time*0.8+s))*0.5;
+      ctx.globalAlpha=sa*Math.min(1,wrapA*2);
+      ctx.fillStyle='#fff8ff';
+      ctx.beginPath(); ctx.arc(sx,sy,0.5+(s%3)*0.4,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // ── MOON RISE — fast ──
+    if (phase==='rise') {
+      moonY -= (isMob ? 3.5 : 4.5);  // fast rise
+      if (moonY <= moonTargY) {
+        moonY = moonTargY;
+        phase = 'type';
+        startTyping();
+      }
+    }
+
+    // Moon glow
+    const mg1=ctx.createRadialGradient(CX,moonY,moonR*0.7,CX,moonY,moonR*3.2);
+    mg1.addColorStop(0,'rgba(255,220,200,0.22)'); mg1.addColorStop(0.3,'rgba(255,180,160,0.10)');
+    mg1.addColorStop(0.7,'rgba(200,100,120,0.04)'); mg1.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=mg1; ctx.beginPath(); ctx.arc(CX,moonY,moonR*3.2,0,Math.PI*2); ctx.fill();
+
+    const mg2=ctx.createRadialGradient(CX,moonY,moonR*0.5,CX,moonY,moonR*1.6);
+    mg2.addColorStop(0,'rgba(255,240,220,0.35)'); mg2.addColorStop(0.5,'rgba(255,200,180,0.12)');
+    mg2.addColorStop(1,'rgba(255,160,140,0)');
+    ctx.fillStyle=mg2; ctx.beginPath(); ctx.arc(CX,moonY,moonR*1.6,0,Math.PI*2); ctx.fill();
+
+    // Moon body
+    const mb=ctx.createRadialGradient(CX-moonR*.22,moonY-moonR*.22,moonR*.05,CX,moonY,moonR);
+    mb.addColorStop(0,'#fffef0'); mb.addColorStop(0.3,'#fff8e8');
+    mb.addColorStop(0.7,'#f5e8d0'); mb.addColorStop(1,'#e8d0b8');
+    ctx.save();
+    ctx.shadowColor='rgba(255,220,180,0.8)'; ctx.shadowBlur=moonR*0.3;
+    ctx.fillStyle=mb; ctx.beginPath(); ctx.arc(CX,moonY,moonR,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Craters
+    [[-.3,-.25,.12],[.2,.1,.07],[-.1,.3,.09],[.35,-.15,.06]].forEach(([cx2,cy2,cr])=>{
+      ctx.save(); ctx.globalAlpha=0.06; ctx.fillStyle='#c0a080';
+      ctx.beginPath(); ctx.arc(CX+cx2*moonR,moonY+cy2*moonR,cr*moonR,0,Math.PI*2); ctx.fill(); ctx.restore();
+    });
+
+    // ── PETALS ──
+    petals.forEach(p=>{
+      p.sway+=p.swayS; p.x+=p.vx+Math.sin(p.sway)*0.6; p.y+=p.vy; p.spin+=p.spinV;
+      if(p.y>H+20){p.y=-20;p.x=Math.random()*W;}
+      const dMoon=Math.sqrt((p.x-CX)**2+(p.y-moonY)**2);
+      const nearGlow=dMoon<moonR*2?(1-(dMoon/(moonR*2)))*0.4:0;
+      drawSakura(p.x,p.y,p.size,p.spin,p.alpha*Math.min(1,wrapA*2)+nearGlow*p.alpha,p.color);
+    });
+
+    // ── TYPING MESSAGE ──
+    if ((phase==='type'||phase==='fade') && msgA>0) {
+      const msgY = moonY + moonR + (isMob?32:40);
+      ctx.save();
+      ctx.globalAlpha  = msgA * (phase==='fade' ? fadeA : 1);
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      const fs1=isMob?18:24, fs2=isMob?12:15;
+      const g=ctx.createLinearGradient(CX-130,0,CX+130,0);
+      g.addColorStop(0,'#c2185b'); g.addColorStop(0.5,'#fff8f0'); g.addColorStop(1,'#c2185b');
+      ctx.font=`italic bold ${fs1}px 'Cormorant Garamond',serif`;
+      ctx.fillStyle=g; ctx.shadowColor='#ff80ab'; ctx.shadowBlur=16;
+      ctx.fillText(typed1 + (t1i<LINE1.length?'|':''), CX, msgY);
+      ctx.font=`italic ${fs2}px 'Cormorant Garamond',serif`;
+      ctx.fillStyle='rgba(255,200,220,0.9)'; ctx.shadowBlur=10;
+      ctx.fillText(typed2 + (t1i>=LINE1.length && t2i<LINE2.length?'|':''), CX, msgY+(isMob?26:32));
+      ctx.restore();
+    }
+
+    // ── FADE — moon + petals + message all together ──
+    if (phase==='fade') {
+      fadeA=Math.max(0,fadeA-0.045);  // fast fade
+      wrap.style.opacity=fadeA;
+      if(fadeA<=0){wrap.remove();onDone();return;}
+    }
+
+    // Fade wrap in
+    if (wrapA<1){wrapA=Math.min(wrapA+0.05,1); if(phase!=='fade') wrap.style.opacity=wrapA;}
+
+    requestAnimationFrame(loop);
+  }
+  loop();
 }
 
 /* ══════════════════════════════════════════════
@@ -715,7 +1662,7 @@ const pcs=Array.from({length:100},()=>({
 let confettiActive = true;
 (function drawConf(){
   ctx2d.clearRect(0,0,cv.width,cv.height);
-  if (!confettiActive) return;
+  if (!confettiActive) return;  // cleared above, stop loop
   pcs.forEach(p=>{
     ctx2d.save(); ctx2d.translate(p.x,p.y); ctx2d.rotate(p.r*Math.PI/180);
     ctx2d.fillStyle=p.c; ctx2d.globalAlpha=.82;
@@ -738,8 +1685,9 @@ let confettiActive = true;
 ══════════════════════════════════════════════════════ */
 (function initFireworks() {
   const fwCv = document.createElement('canvas');
-  fwCv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;';
-  document.body.insertBefore(fwCv, document.getElementById('heart-canvas'));
+  // Above heart canvas so fireworks show on top
+  fwCv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:0;';
+  document.body.appendChild(fwCv);
   const fwCtx = fwCv.getContext('2d');
   function fwResize(){ fwCv.width=innerWidth; fwCv.height=innerHeight; }
   fwResize(); window.addEventListener('resize', fwResize);
@@ -767,13 +1715,11 @@ let confettiActive = true;
   class Rocket {
     constructor() {
       const W = fwCv.width, H = fwCv.height;
-      this.x     = W * (0.08 + Math.random() * 0.84);
-      this.y     = H;
-      // Target height — upper 5%–30% of screen — reaches near top on any screen
-      this.ty    = H * (0.05 + Math.random() * 0.25);
-      this.vx    = (Math.random() - 0.5) * 0.8;
-      // Speed scales with screen height — always reaches top regardless of resolution
-      this.vy    = -(H / 55 + Math.random() * H / 80);
+      this.x     = W * (0.05 + Math.random() * 0.90);
+      this.y     = H * 0.55;  // launch from middle, burst in top 40%
+      this.ty    = H * (0.04 + Math.random() * 0.32);  // burst in top 35%
+      this.vx    = (Math.random() - 0.5) * 1.2;
+      this.vy    = -(H / 45 + Math.random() * H / 70);
       this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
       this.trail = [];
       this.done  = false;
@@ -837,12 +1783,11 @@ let confettiActive = true;
       this.vx    = Math.cos(angle) * speed;
       this.vy    = Math.sin(angle) * speed;
       this.alpha = 1.0;
-      // fast fade — authentic fireworks fade in ~1–2 seconds
-      this.decay = 0.022 + Math.random() * 0.020;
-      this.grav  = 0.055;   // gravity
-      this.drag  = 0.980;   // air resistance
+      this.decay = 0.018 + Math.random() * 0.014;
+      this.grav  = 0.05;
+      this.drag  = 0.982;
       this.trail = [];
-      this.size  = 0.8 + Math.random() * 1.0;
+      this.size  = 1.0 + Math.random() * 1.4;
     }
 
     update() {
@@ -905,10 +1850,10 @@ let confettiActive = true;
       this.color = color;
 
       // Number of sparks — authentic fireworks: 40–70
-      const COUNT = 45 + Math.floor(Math.random() * 30);
+      const COUNT = 70 + Math.floor(Math.random() * 40);
 
       // Burst type: uniform circle or slight variation
-      const baseSpeed = 2.2 + Math.random() * 2.0;  // small tight burst
+      const baseSpeed = 3.5 + Math.random() * 3.0;
 
       for (let i = 0; i < COUNT; i++) {
         // Evenly spaced angles + tiny random offset
@@ -949,42 +1894,35 @@ let confettiActive = true;
   function scheduleNext() {
     if (!fwActive) return;
     rockets.push(new Rocket());
-    setTimeout(scheduleNext, 800 + Math.random() * 1400);
+    // Sometimes launch 2 at once for wow effect
+    if (Math.random() < 0.3) setTimeout(()=>rockets.push(new Rocket()), 180);
+    setTimeout(scheduleNext, 400 + Math.random() * 600);
   }
 
-  let fwAlpha = 0;       // starts 0, fades in then out
-  let fwFading = false;  // true when fading out
+  let fwAlpha = 0;
+  let fwFading = false;
 
   window.startFireworks = function () {
-    fwActive = true;
-    fwAlpha  = 0;
-    fwFading = false;
-
-    // Fade canvas in
+    fwActive = true; fwAlpha = 0; fwFading = false;
     let ft = 0;
-    const fadeIn = setInterval(() => {
-      ft += 0.04; fwAlpha = Math.min(ft, 1);
-      if (ft >= 1) clearInterval(fadeIn);
-    }, 30);
-
-    // First burst — 2 rockets close together
+    const fadeIn = setInterval(()=>{ ft+=0.06; fwAlpha=Math.min(ft,1); if(ft>=1) clearInterval(fadeIn); }, 20);
+    // Launch 3 rockets immediately for instant wow
     rockets.push(new Rocket());
-    setTimeout(() => rockets.push(new Rocket()), 350);
-    // Then ongoing
-    setTimeout(scheduleNext, 900);
+    setTimeout(()=>rockets.push(new Rocket()), 200);
+    setTimeout(()=>rockets.push(new Rocket()), 450);
+    setTimeout(scheduleNext, 700);
   };
 
-  // Called after Happy Birthday Sister fully types — fade fireworks out
   window.fadeOutFireworks = function() {
-    fwActive = false;  // stop new rockets
+    fwActive = false;
     fwFading = true;
   };
 
   /* ── RENDER LOOP ──────────────────────────────────── */
   (function fwLoop() {
-    // Fade out smoothly
-    if (fwFading && fwAlpha > 0) {
-      fwAlpha = Math.max(0, fwAlpha - 0.006);
+    if (fwFading) {
+      fwAlpha = Math.max(0, fwAlpha - 0.008);  // slow fade out
+      fwCv.style.opacity = fwAlpha;
       if (fwAlpha <= 0) {
         fwCtx.clearRect(0, 0, fwCv.width, fwCv.height);
         requestAnimationFrame(fwLoop);
@@ -992,11 +1930,8 @@ let confettiActive = true;
       }
     }
 
-    fwCtx.fillStyle = 'rgba(0,0,0,0.22)';
-    fwCtx.fillRect(0, 0, fwCv.width, fwCv.height);
-
-    // Apply global alpha to entire fireworks canvas
-    fwCv.style.opacity = fwAlpha;
+    // Use clearRect so fireworks don't leave dark overlay on heart
+    fwCtx.clearRect(0, 0, fwCv.width, fwCv.height);
 
     // Rockets
     rockets.forEach(r => {
@@ -1031,468 +1966,247 @@ let confettiActive = true;
 function initHeart() {
   const canvas = document.getElementById('heart-canvas');
   const ctx    = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height= window.innerHeight;
+  window.addEventListener('resize', ()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; build(); });
 
-  const PINK = '#ff80ab';
-
-  function resizeCanvas() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeCanvas();
-
-  /* ─── Parametric heart curve ───────────────────────
-     Input : t ∈ [0, 2π)
-     Output: {x, y} in normalised coords (~±1 range)  */
-  function hPos(t) {
-    const s = Math.sin(t);
+  // ── Heart curve ──
+  function heart(t) {
     return {
-      x:  s * s * s,
-      y: -(0.8125*Math.cos(t)
-         - 0.3125*Math.cos(2*t)
-         - 0.1250*Math.cos(3*t)
-         - 0.0625*Math.cos(4*t)),
+      x:  16 * Math.pow(Math.sin(t), 3),
+      y: -(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))
     };
   }
 
-  /* ─── Outward unit normal at t ────────────────────── */
-  function hNormal(t) {
-    const dt = 0.0005;
-    const a  = hPos(t - dt);
-    const b  = hPos(t + dt);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const len = Math.sqrt(dx*dx + dy*dy) || 1;
-    // tangent = (dx,dy)/len  →  normal = (dy,-dx)/len (outward)
-    return { nx: dy / len, ny: -dx / len };
+  let CX, CY, SCALE;
+  let heartVisible  = false;
+  let phase         = 'vortex';
+  let phaseTime     = 0;
+  let heartMsgAlpha = 0;
+  let msgStarted    = false;
+  let dust          = [];
+
+  // Shockwave
+  let shockwaves = [];
+
+  function addShockwave(x, y, col) {
+    shockwaves.push({ x, y, r:0, a:1.0, col });
   }
-
-  /* ─── Arc-length LUT ───────────────────────────────
-     Builds a table mapping arc-distance s → parameter t
-     so we can place particles at equal arc-length spacing */
-  const LUT_N = 8000;
-  let   lutArc = 0;
-  const lut    = new Float64Array(LUT_N + 1); // lut[i] = arc at i*(2π/LUT_N)
-  const lutT   = new Float64Array(LUT_N + 1); // lutT[i] = t value
-
-  (function buildLUT() {
-    let prev = hPos(0), total = 0;
-    lut[0]  = 0;
-    lutT[0] = 0;
-    for (let i = 1; i <= LUT_N; i++) {
-      const t   = (i / LUT_N) * Math.PI * 2;
-      const cur = hPos(t);
-      total += Math.sqrt((cur.x-prev.x)**2 + (cur.y-prev.y)**2);
-      lut[i]  = total;
-      lutT[i] = t;
-      prev    = cur;
-    }
-    lutArc = total;
-  })();
-
-  /* binary search: arc distance s → t */
-  function arcToT(s) {
-    const target = ((s % lutArc) + lutArc) % lutArc;
-    let lo = 0, hi = LUT_N;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      lut[mid] < target ? lo = mid + 1 : hi = mid;
-    }
-    // linear interpolation between lo-1 and lo for smoothness
-    if (lo === 0) return lutT[0];
-    const t0 = lutT[lo-1], t1 = lutT[lo];
-    const a0 = lut[lo-1],  a1 = lut[lo];
-    const frac = a1 > a0 ? (target - a0) / (a1 - a0) : 0;
-    return t0 + frac * (t1 - t0);
-  }
-
-  /* ─── Particles ────────────────────────────────────
-     Each particle = one "I love you" word
-     - arcPos : current arc distance around heart
-     - layer  : which concentric ring (0 = outermost)
-     - layerOffset : pixel offset along normal        */
-  let particles = [];
-  let R, CX, CY, FONT, SPEED;
-  // Center gold text state
-  let centerLines     = [];   // [{text}]
-  let centerTextAlpha = 0;
-  let centerTyping    = false;
-
-  // Full message to type in center
-  const CENTER_MSGS = ['Happy Birthday,', 'Sister!'];
-
-  function startCenterText() {
-    centerTyping = true;
-    centerTextAlpha = 0;
-
-    // Fade in the text container first
-    let fadeT = 0;
-    const fadeIn = setInterval(() => {
-      fadeT += 0.04;
-      centerTextAlpha = Math.min(fadeT, 1);
-      if (fadeT >= 1) clearInterval(fadeIn);
-    }, 30);
-
-    // Type each line sequentially
-    let lineIdx = 0;
-    centerLines = [{ text: '' }, { text: '' }];
-
-    function typeLine(lIdx, msg, cb) {
-      let ci = 0;
-      centerLines[lIdx] = { text: '' };
-      (function typeChar() {
-        if (ci < msg.length) {
-          centerLines[lIdx].text += msg[ci++];
-          setTimeout(typeChar, 55);  // slightly slower — dramatic
-        } else if (cb) {
-          setTimeout(cb, 400);
-        }
-      })();
-    }
-
-    // Type line 1 then line 2 then start spin + fade fireworks
-    typeLine(0, CENTER_MSGS[0], () => {
-      typeLine(1, CENTER_MSGS[1], () => {
-        setTimeout(() => {
-          if (window.startHeartSpin)   window.startHeartSpin();
-          // Fade fireworks out slowly after text is done
-          setTimeout(() => { if (window.fadeOutFireworks) window.fadeOutFireworks(); }, 3000);
-        }, 800);
-      });
-    });
-  }
-  // Spin state — triggered after text is fully typed
-  let spinActive   = false;
-  let spinAngle    = 0;
-  let spinSpeed    = 0;          // starts at 0, ramps up
-  const MAX_SPIN   = 0.008;      // max radians per frame — slow elegant spin
-
-  // Orbiting sparkle planets
-  const ORBIT_COUNT  = 28;
-  const GOLD_COLORS  = ['#ffd700','#ffec6e','#fff8dc','#ffa500','#ffe066','#fff0a0','#f5c518'];
-  let   orbitActive  = false;  // sparkles disabled
-  let   orbitAlpha   = 0;
-
-  const orbiters = Array.from({ length: ORBIT_COUNT }, (_, i) => ({
-    angle:    (i / ORBIT_COUNT) * Math.PI * 2,   // evenly spread
-    orbitR:   0,                                  // starts at 0, expands outward
-    targetR:  (0.85 + Math.random() * 0.45),      // multiplier of heart R
-    speed:    (Math.random() > 0.5 ? 1 : -1)      // clockwise or counter
-              * (0.004 + Math.random() * 0.006),   // orbital speed
-    size:     1.8 + Math.random() * 2.8,
-    color:    GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)],
-    twinkle:  Math.random() * Math.PI * 2,
-    trail:    [],
-    layer:    Math.floor(Math.random() * 3),       // 3 orbital layers
-  }));
-
-  // Called after gold text finishes typing
-  window.startHeartSpin = function() {
-    spinActive  = false; // spin disabled
-    orbitActive = false;
-  };
-
-  // Ramp up spin speed smoothly
-  function updateSpin() {
-    if (!spinActive) return;
-    if (spinSpeed < MAX_SPIN) spinSpeed += 0.00008;
-    spinAngle += spinSpeed;
-  }
-  let startCY    = null;
-  let moveStart  = null;
-  const MOVE_DUR = 2200; // ms — smooth rise duration
-
-  // Called externally after card fades out
-  window.moveHeartToCenter = function() {
-    const W     = canvas.width;
-    const H     = canvas.height;
-    startCY  = CY;
-    targetCY = H * 0.50;
-    moveStart = performance.now();
-
-    // Stop confetti immediately
-    confettiActive = false;
-    ctx2d.clearRect(0, 0, cv.width, cv.height);
-
-    // Step 1: Heart reaches center → launch fireworks
-    setTimeout(() => {
-      if (window.startFireworks) window.startFireworks();
-    }, MOVE_DUR + 200);
-
-    // Step 2: Start gold text typing after heart settles
-    setTimeout(() => { startCenterText(); }, MOVE_DUR + 400);
-  };
 
   function build() {
-    particles = [];
+    const W=canvas.width, H=canvas.height, isMob=W<600;
+    CX=W/2; CY=isMob?H*.50:H*.50;
+    const targetW=isMob?W*.42:Math.min(W*.32,H*.42);
+    SCALE=targetW/16;
+    dust=[];
 
-    const W     = canvas.width;
-    const H     = canvas.height;
-    const isMob = W < 600;
+    // Use evenly spaced angles so words never overlap when flowing
+    const N = isMob ? 80 : 120;
+    const STEP = (Math.PI * 2) / N;
 
-    R    = isMob ? Math.min(W*0.44, H*0.30) : Math.min(W*0.30, H*0.36);
-    CX   = W / 2;
-    CY   = isMob ? H * 0.78 : H * 0.75;
-    FONT = isMob ? 4 : 5;
+    for (let i=0; i<N; i++) {
+      const angle = i * STEP;  // evenly spaced — no overlap
+      const pos   = heart(angle);
+      const tx    = CX + pos.x * SCALE;
+      const ty    = CY + pos.y * SCALE;
 
-    // Measure exact rendered word width
-    ctx.font = `bold ${FONT}px 'Nunito', sans-serif`;
-    const wordW  = ctx.measureText('I love you').width;
-    const GAP    = 2;                  // px gap between words
-    const wordPx = wordW + GAP;        // total slot per word in pixels
+      const vortexR   = Math.max(W,H) * (.4 + Math.random()*.55);
+      const vortexA   = Math.random()*Math.PI*2;
+      const vortexSpd = (.008 + Math.random()*.012) * (Math.random()<.5?1:-1);
 
-    const lineH  = FONT * 1.25;       // row height in px
-    const ROWS   = isMob ? 5 : 7;
-
-    // Base loop duration in seconds — all rows share same loop time
-    // so the whole border moves as one unit
-    const LOOP_SECS = 90;
-
-    for (let row = 0; row < ROWS; row++) {
-      const layerOffset = -row * lineH;        // px inward from outline
-
-      // Actual radius of this row in pixels
-      const rowR = Math.max(1, R + layerOffset);
-
-      // Actual perimeter of this row in pixels
-      const perimPx = lutArc * rowR;
-
-      // Number of words that fit — floor so no overlap ever
-      const count = Math.floor(perimPx / wordPx);
-
-      // Arc length per word slot — evenly divided
-      const arcSlot = lutArc / count;
-
-      // Each row's speed = its own perimeter / LOOP_SECS
-      // → every word moves exactly wordPx pixels per arcSlot seconds
-      // → gap between any two words is always exactly GAP pixels
-      const rowSpeed = lutArc / LOOP_SECS;
-
-      // Stagger alternate rows by half a slot (brick pattern)
-      const stagger = (row % 2 === 0) ? 0 : arcSlot * 0.5;
-
-      for (let j = 0; j < count; j++) {
-        particles.push({
-          arcPos:      (j * arcSlot + stagger) % lutArc,
-          layerOffset,
-          rowSpeed,
-          row,
-        });
-      }
+      dust.push({
+        x: CX + Math.cos(vortexA)*vortexR,
+        y: CY + Math.sin(vortexA)*vortexR,
+        tx, ty,
+        vortexA, vortexR, vortexSpd,
+        snapProg: 0,
+        snapDelay: Math.random()*1.0,
+        snapDur:   0.6 + Math.random()*.5,
+        snapped:   false,
+        size:  isMob ? 3.5 : 4.5,  // consistent size
+        alpha: .85 + Math.random()*.15,
+        color: ['#ff80ab','#f48fb1','#ff4081','#ffb3c8','#ffd6e7','#ff80ab'][Math.floor(Math.random()*6)],
+        twinkle: Math.random()*Math.PI*2,
+        flowAngle: angle,
+        offsetX: 0,  // no offset — keep on heart line
+        offsetY: 0,
+        arrivalTime: -1,
+      });
     }
-
-    // Global SPEED not used — each particle uses its own rowSpeed
-    SPEED = lutArc / LOOP_SECS;
   }
-
   build();
-  window.addEventListener('resize', () => { resizeCanvas(); build(); });
 
-  const startTime = performance.now();
-  const FADE_IN   = 2.0;
+  let startT = null;
+  let snapDone = false;
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function easeOutBack(t){ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); }
+  function easeInOutCubic(t){ return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
 
-    const elapsed       = (performance.now() - startTime) / 1000;
-    const fadeAlpha     = Math.min(elapsed / FADE_IN, 1);
-    const beat          = 1 + Math.sin(elapsed * 0.6) * 0.012;
-    const globalAdvance = elapsed * SPEED;
+  function tick(ts) {
+    if (!heartVisible) { requestAnimationFrame(tick); return; }
+    if (!startT) startT = ts;
+    const elapsed = (ts - startT) / 1000;
+    phaseTime = elapsed;
 
-    // Smoothly animate CY toward center when triggered
-    if (moveStart !== null && targetCY !== null) {
-      const moveElapsed = performance.now() - moveStart;
-      const prog = Math.min(moveElapsed / MOVE_DUR, 1);
-      // Ease in-out cubic
-      const ease = prog < 0.5
-        ? 4 * prog * prog * prog
-        : 1 - Math.pow(-2 * prog + 2, 3) / 2;
-      CY = startCY + (targetCY - startCY) * ease;
-      if (prog >= 1) { CY = targetCY; moveStart = null; }
-    }
+    const W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
 
-    // Update spin
-    updateSpin();
+    // ── STARDUST PARTICLES ──
+    let allSnapped = true;
 
-    // Fade in orbiters
-    if (orbitActive && orbitAlpha < 1) orbitAlpha = Math.min(orbitAlpha + 0.012, 1);
+    dust.forEach(p => {
+      p.twinkle += .05;
 
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font         = `bold ${FONT}px 'Nunito', sans-serif`;
-    ctx.fillStyle    = PINK;
-    ctx.shadowColor  = PINK;
-    ctx.shadowBlur   = 5;
-    ctx.globalAlpha  = fadeAlpha;
+      if (phase === 'vortex') {
+        // Spiral inward — vortex spinning getting tighter
+        const spiral = Math.min(elapsed / 2.0, 1);
+        p.vortexA   += p.vortexSpd * (1 + spiral * 3);   // spins faster over time
+        p.vortexR   *= (1 - .012 * spiral);               // tightens
+        p.x = CX + Math.cos(p.vortexA) * p.vortexR;
+        p.y = CY + Math.sin(p.vortexA) * p.vortexR;
 
-    particles.forEach(p => {
-      const arc = (p.arcPos + elapsed * p.rowSpeed) % lutArc;
-      const t   = arcToT(arc);
-      const pos = hPos(t);
-      const nor = hNormal(t);
+        // Glow trail
+        const glow = 3 + Math.abs(Math.sin(p.twinkle))*6;
+        ctx.save();
+        ctx.globalAlpha = p.alpha * (.4 + spiral*.5);
+        ctx.fillStyle   = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur  = glow;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(0.5+spiral*.5), 0, Math.PI*2); ctx.fill();
+        ctx.restore();
 
-      const normOff = p.layerOffset / R;
-      const nx = pos.x + nor.nx * normOff;
-      const ny = pos.y + nor.ny * normOff;
+        if (elapsed >= 2.5) { phase='snap'; startT=ts; return; }
 
-      // Apply spin rotation around heart center
-      const cosS = Math.cos(spinAngle);
-      const sinS = Math.sin(spinAngle);
-      const rx   = nx * cosS - ny * sinS;
-      const ry   = nx * sinS + ny * cosS;
-
-      const sx = CX + rx * R * beat;
-      const sy = CY + ry * R * beat * 0.93;
-
-      ctx.fillText('I love you', sx, sy);
-    });
-
-    // ── ORBITING GOLDEN SPARKLES ──
-    if (orbitActive && orbitAlpha > 0) {
-      orbiters.forEach(o => {
-        // Expand orbit radius outward smoothly
-        if (o.orbitR < o.targetR) o.orbitR = Math.min(o.orbitR + 0.008, o.targetR);
-
-        // Advance orbital angle
-        o.angle   += o.speed;
-        o.twinkle += 0.06;
-
-        // 3 orbital radii for depth — inner/mid/outer
-        const baseR  = R * (1.15 + o.layer * 0.22) * o.orbitR;
-        const ox     = CX + Math.cos(o.angle + spinAngle) * baseR;
-        const oy     = CY + Math.sin(o.angle + spinAngle) * baseR * 0.93;
-
-        // Twinkle size
-        const sz = o.size * (0.5 + Math.abs(Math.sin(o.twinkle)) * 1.0);
-
-        // Trail for comet effect
-        o.trail.push({ x: ox, y: oy });
-        if (o.trail.length > 10) o.trail.shift();
-
-        // Draw trail
-        if (o.trail.length > 2) {
-          ctx.save();
-          for (let ti = 1; ti < o.trail.length; ti++) {
-            const ta = (ti / o.trail.length) * orbitAlpha * 0.5;
-            ctx.globalAlpha  = ta;
-            ctx.strokeStyle  = o.color;
-            ctx.shadowColor  = o.color;
-            ctx.shadowBlur   = 6;
-            ctx.lineWidth    = sz * (ti / o.trail.length) * 0.8;
-            ctx.beginPath();
-            ctx.moveTo(o.trail[ti-1].x, o.trail[ti-1].y);
-            ctx.lineTo(o.trail[ti].x,   o.trail[ti].y);
-            ctx.stroke();
-          }
-          ctx.restore();
+      } else if (phase === 'snap') {
+        const t = elapsed - p.snapDelay;
+        if (t < 0) {
+          // Still in vortex
+          p.vortexA += p.vortexSpd * 4;
+          p.x = CX + Math.cos(p.vortexA)*p.vortexR;
+          p.y = CY + Math.sin(p.vortexA)*p.vortexR;
+          allSnapped = false;
+        } else {
+          // Snap to heart position
+          const prog = Math.min(t / p.snapDur, 1);
+          const ease = easeOutBack(Math.min(prog*1.1, 1));
+          p.x = p.x + (p.tx - p.x) * ease * .15;
+          p.y = p.y + (p.ty - p.y) * ease * .15;
+          const dist = Math.sqrt((p.x-p.tx)**2+(p.y-p.ty)**2);
+          if(dist < 2){ p.x=p.tx; p.y=p.ty; p.snapped=true; if(p.arrivalTime<0) p.arrivalTime=elapsed; }
+          else allSnapped=false;
         }
 
-        // Draw sparkle head
+        const flash = p.snapped ? Math.max(0,1-(elapsed-p.arrivalTime)*4) : 0;
+        const glow  = p.snapped ? 8+Math.abs(Math.sin(p.twinkle))*6 : 4;
         ctx.save();
-        ctx.globalAlpha = orbitAlpha * (0.7 + Math.sin(o.twinkle) * 0.3);
-        ctx.fillStyle   = o.color;
-        ctx.shadowColor = o.color;
-        ctx.shadowBlur  = 14;
-        ctx.beginPath();
-        ctx.arc(ox, oy, sz, 0, Math.PI * 2);
-        ctx.fill();
-        // Bright center
-        ctx.globalAlpha = orbitAlpha * 0.9;
-        ctx.fillStyle   = '#fff';
-        ctx.shadowBlur  = 6;
-        ctx.beginPath();
-        ctx.arc(ox, oy, sz * 0.35, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle   = flash>0 ? '#ffb3c8' : p.color;
+        ctx.shadowColor = flash>0 ? '#ff80ab' : p.color;
+        ctx.shadowBlur  = glow + flash*20;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1+flash*.5), 0, Math.PI*2); ctx.fill();
         ctx.restore();
-      });
+
+      } else {
+        // FLOW phase — "I love you" words orbit heart smoothly
+        p.flowAngle += 0.007;  // consistent speed for all particles = smooth
+        const pos = heart(p.flowAngle);
+        p.x = CX + pos.x*SCALE + p.offsetX;
+        p.y = CY + pos.y*SCALE + p.offsetY;
+        ctx.save();
+        ctx.globalAlpha  = p.alpha * 0.9;
+        ctx.fillStyle    = p.color;
+        ctx.shadowColor  = p.color;
+        ctx.shadowBlur   = 6;
+        ctx.font         = `bold ${p.size*1.8}px Arial`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('I love you', p.x, p.y);
+        ctx.restore();
+      }
+    });
+
+    // Phase transitions
+    if (phase==='snap' && allSnapped) {
+      phase = 'flow';
     }
 
-    // ── LUXURY GOLD CENTER TEXT ──
-    if (centerTextAlpha > 0 && centerLines.length > 0) {
-      const isMob   = canvas.width < 600;
-      const W       = canvas.width;
-
-      // Font sizes — elegant and refined
-      const fSize1  = isMob ? 16 : 22;   // "Happy Birthday,"
-      const fSize2  = isMob ? 20 : 28;   // "Sister!"
-      const lineH   = isMob ? 28 : 38;
-
-      // Slow shimmer sweep — moves across text over time
-      const sweep   = ((elapsed * 0.4) % 1);  // 0→1 repeating
-      const sweepX  = CX - 160 + sweep * 320;
-
+    // ── GOLD CENTER MESSAGE ──
+    if (phase==='flow' && phaseTime>1.5 && !msgStarted) {
+      msgStarted=true;
+      // Wait until "Sister!" has been visible for 1.5s then launch fireworks
+      setTimeout(()=>{ if(window.startFireworks) window.startFireworks(); }, 1500);
+      // Fade out fireworks slowly after 7s
+      setTimeout(()=>{ if(window.fadeOutFireworks) window.fadeOutFireworks(); }, 8500);
+    }
+    if (msgStarted) {
+      heartMsgAlpha = Math.min(heartMsgAlpha+.012, 1);
+      const isMob=W<600;
+      const fs1=isMob?14:19, fs2=isMob?18:26;
+      const pulse=1+Math.sin(phaseTime*2)*.04;
+      const sweep=((phaseTime*.5)%1);
       ctx.save();
-      ctx.globalAlpha  = centerTextAlpha;
-      ctx.textAlign    = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.globalAlpha=heartMsgAlpha;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
 
-      centerLines.forEach((line, i) => {
-        if (!line.text) return;
-        const fs   = i === 0 ? fSize1 : fSize2;
-        const yOff = (i - (centerLines.length - 1) / 2) * lineH;
-        const ty   = CY + yOff;
+      // "Happy Birthday," line
+      const g1=ctx.createLinearGradient(CX-130,0,CX+130,0);
+      g1.addColorStop(0,'#c8940a');
+      g1.addColorStop(Math.max(0,sweep-.1),'#c8940a');
+      g1.addColorStop(sweep,'#ffffff');
+      g1.addColorStop(Math.min(1,sweep+.1),'#c8940a');
+      g1.addColorStop(1,'#c8940a');
+      ctx.font=`italic bold ${fs1}px Georgia,serif`;
+      ctx.fillStyle=g1;
+      ctx.shadowColor='#ffd700'; ctx.shadowBlur=20;
+      ctx.fillText('Happy Birthday,',CX,CY-(isMob?22:30));
 
-        // ── Layer 1: deep outer glow (rose gold) ──
-        ctx.save();
-        ctx.font      = `bold italic ${fs}px 'Cormorant Garamond', serif`;
-        ctx.fillStyle = 'rgba(180,100,80,0.0)';
-        ctx.shadowColor = '#c8a07a';
-        ctx.shadowBlur  = 40;
-        ctx.fillText(line.text, CX, ty);
-        ctx.restore();
-
-        // ── Layer 2: mid glow (warm gold) ──
-        ctx.save();
-        ctx.font        = `bold italic ${fs}px 'Cormorant Garamond', serif`;
-        ctx.fillStyle   = 'rgba(255,180,50,0.0)';
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur  = 22;
-        ctx.fillText(line.text, CX, ty);
-        ctx.restore();
-
-        // ── Layer 3: main text — rich gold gradient ──
-        const grad = ctx.createLinearGradient(CX - fs*4, ty - fs, CX + fs*4, ty + fs);
-        grad.addColorStop(0.00, '#8B6914');
-        grad.addColorStop(0.15, '#c8940a');
-        grad.addColorStop(0.30, '#e8c060');
-        grad.addColorStop(0.45, '#fff8e0');
-        grad.addColorStop(0.50, '#ffffff');
-        grad.addColorStop(0.55, '#fff8e0');
-        grad.addColorStop(0.70, '#e8c060');
-        grad.addColorStop(0.85, '#c8940a');
-        grad.addColorStop(1.00, '#8B6914');
-        ctx.save();
-        ctx.font        = `bold italic ${fs}px 'Cormorant Garamond', serif`;
-        ctx.fillStyle   = grad;
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur  = 10;
-        ctx.fillText(line.text, CX, ty);
-        ctx.restore();
-
-        // ── Layer 4: animated shimmer sweep over text ──
-        ctx.save();
-        ctx.font = `bold italic ${fs}px 'Cormorant Garamond', serif`;
-        const shimmer = ctx.createLinearGradient(sweepX - 60, ty, sweepX + 60, ty);
-        shimmer.addColorStop(0,   'rgba(255,255,255,0)');
-        shimmer.addColorStop(0.4, 'rgba(255,255,255,0)');
-        shimmer.addColorStop(0.5, 'rgba(255,255,255,0.55)');
-        shimmer.addColorStop(0.6, 'rgba(255,255,255,0)');
-        shimmer.addColorStop(1,   'rgba(255,255,255,0)');
-        ctx.fillStyle = shimmer;
-        ctx.fillText(line.text, CX, ty);
-        ctx.restore();
-      });
-
+      // "Sister!" line — bigger + stronger glow
+      const g2=ctx.createLinearGradient(CX-100,0,CX+100,0);
+      g2.addColorStop(0,'#8B6914');
+      g2.addColorStop(Math.max(0,sweep-.1),'#e8c060');
+      g2.addColorStop(sweep,'#ffffff');
+      g2.addColorStop(Math.min(1,sweep+.15),'#ffd700');
+      g2.addColorStop(1,'#8B6914');
+      ctx.font=`bold italic ${(fs2*pulse).toFixed(1)}px Georgia,serif`;
+      ctx.fillStyle=g2;
+      ctx.shadowColor='#ffd700'; ctx.shadowBlur=30;
+      // Draw 3x for extra brightness
+      ctx.fillText('Sister!',CX,CY+(isMob?10:14));
+      ctx.shadowBlur=15;
+      ctx.fillText('Sister!',CX,CY+(isMob?10:14));
       ctx.restore();
     }
 
-    requestAnimationFrame(draw);
+    requestAnimationFrame(tick);
   }
+  requestAnimationFrame(tick);
 
-  draw();
+  let startCY=null, targetCY=null, moveStart=null;
+  const MOVE_DUR=1800;
+
+  window.moveHeartToCenter = function() {
+    heartVisible = true; startT = null;
+    const W=canvas.width, H=canvas.height;
+    startCY=CY; targetCY=H*.50; moveStart=performance.now();
+    confettiActive=false;
+    // Fireworks now triggered by msgStarted in tick loop
+    (function moveTick(){
+      const el=performance.now()-moveStart;
+      const prog=Math.min(el/MOVE_DUR,1);
+      const ease=prog<.5?4*prog*prog*prog:1-Math.pow(-2*prog+2,3)/2;
+      CY=startCY+(targetCY-startCY)*ease;
+      if(prog<1) requestAnimationFrame(moveTick);
+      else{ CY=targetCY; moveStart=null; }
+    })();
+  };
+
+  window.startHeartSpin = function(){};
 }
 
-/* ══ BALLOONS ══ */
+/* ══ BALLOONS — only active during typing message phase ══ */
 const BALLOONS = ['🎈','🎉','🎊','💕','🎀','🌹'];
 function spawnBalloons(cx, cy) {
+  if (!confettiActive) return;  // only when confetti is active (typing phase)
   if (!intro.classList.contains('hide')) return;
   for (let b = 0; b < 5; b++) {
     const el = document.createElement('div');
@@ -1505,7 +2219,7 @@ function spawnBalloons(cx, cy) {
     setTimeout(()=>el.remove(), 3500);
   }
 }
-document.addEventListener('click',   e => spawnBalloons(e.clientX, e.clientY));
+document.addEventListener('click', e => spawnBalloons(e.clientX, e.clientY));
 document.addEventListener('touchend', e => {
   spawnBalloons(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
 }, {passive:true});
