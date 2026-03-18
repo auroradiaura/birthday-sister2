@@ -1016,7 +1016,7 @@ function showSakuraGame(onDone) {
     petals.push({
       x:      20 + Math.random()*(innerWidth-40),
       y:      -size,
-      vy:     1.4 + Math.random()*1.8,
+      vy:     3.5 + Math.random()*3.0,
       vx:     (Math.random()-.5)*.8,
       spin:   Math.random()*Math.PI*2,
       spinV:  (Math.random()-.5)*.04,
@@ -1258,10 +1258,10 @@ function showSakuraTree(onDone) {
   let holdT   = 0;
 
   // Typing message state
-  const LINE1 = 'For you, Cicy 🌸';
-  const LINE2 = 'Like the moon, you light up every room you enter 🌸';
-  let typed1  = '', typed2  = '';
-  let t1i     = 0,  t2i     = 0;
+  const LINE2A = 'Like the moon, you light up';
+  const LINE2B = 'every room you enter 🌸';
+  let typed2a = '', typed2b = '';
+  let t2ai = 0, t2bi = 0;
   let msgA    = 0;
   let typingDone = false;
 
@@ -1271,16 +1271,12 @@ function showSakuraTree(onDone) {
     let fa = 0;
     const fi = setInterval(()=>{ fa=Math.min(fa+0.05,1); msgA=fa; if(fa>=1) clearInterval(fi); },20);
     // Type line 1
-    function typeLine1() {
-      if (t1i < LINE1.length) { typed1 += LINE1[t1i++]; setTimeout(typeLine1, 18); }
-      else setTimeout(typeLine2, 300);
-    }
-    // Type line 2
     function typeLine2() {
-      if (t2i < LINE2.length) { typed2 += LINE2[t2i++]; setTimeout(typeLine2, 18); }
+      if (t2ai < LINE2A.length) { typed2a += LINE2A[t2ai++]; setTimeout(typeLine2, 18); }
+      else if (t2bi < LINE2B.length) { typed2b += LINE2B[t2bi++]; setTimeout(typeLine2, 18); }
       else { typingDone = true; setTimeout(()=>{ phase='fade'; }, 1500); }
     }
-    setTimeout(typeLine1, 300);
+    setTimeout(typeLine2, 300);
   }
 
   function loop() {
@@ -1351,20 +1347,24 @@ function showSakuraTree(onDone) {
 
     // ── TYPING MESSAGE ──
     if ((phase==='type'||phase==='fade') && msgA>0) {
-      const msgY = moonY + moonR + (isMob?32:40);
+      const fs2 = isMob ? 16 : 22;
+      const lineH = isMob ? 28 : 36;
+      const msgY = moonY + moonR + (isMob ? 32 : 44);
       ctx.save();
       ctx.globalAlpha  = msgA * (phase==='fade' ? fadeA : 1);
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'middle';
-      const fs1=isMob?18:24, fs2=isMob?12:15;
-      const g=ctx.createLinearGradient(CX-130,0,CX+130,0);
-      g.addColorStop(0,'#c2185b'); g.addColorStop(0.5,'#fff8f0'); g.addColorStop(1,'#c2185b');
-      ctx.font=`italic bold ${fs1}px 'Cormorant Garamond',serif`;
-      ctx.fillStyle=g; ctx.shadowColor='#ff80ab'; ctx.shadowBlur=16;
-      ctx.fillText(typed1 + (t1i<LINE1.length?'|':''), CX, msgY);
-      ctx.font=`italic ${fs2}px 'Cormorant Garamond',serif`;
-      ctx.fillStyle='rgba(255,200,220,0.9)'; ctx.shadowBlur=10;
-      ctx.fillText(typed2 + (t1i>=LINE1.length && t2i<LINE2.length?'|':''), CX, msgY+(isMob?26:32));
+      ctx.font = `italic ${fs2}px 'Cormorant Garamond',serif`;
+      ctx.fillStyle = 'rgba(255,200,220,0.95)';
+      ctx.shadowColor = '#ff80ab'; ctx.shadowBlur = 16;
+      // Line A
+      const cursorA = t2ai < LINE2A.length ? '|' : '';
+      ctx.fillText(typed2a + cursorA, CX, msgY);
+      // Line B — only show once line A is done
+      if (t2ai >= LINE2A.length) {
+        const cursorB = t2bi < LINE2B.length ? '|' : '';
+        ctx.fillText(typed2b + cursorB, CX, msgY + lineH);
+      }
       ctx.restore();
     }
 
@@ -1716,10 +1716,10 @@ let confettiActive = true;
     constructor() {
       const W = fwCv.width, H = fwCv.height;
       this.x     = W * (0.05 + Math.random() * 0.90);
-      this.y     = H * 0.55;  // launch from middle, burst in top 40%
-      this.ty    = H * (0.04 + Math.random() * 0.32);  // burst in top 35%
-      this.vx    = (Math.random() - 0.5) * 1.2;
-      this.vy    = -(H / 45 + Math.random() * H / 70);
+      this.y     = H;                                    // start from very bottom
+      this.ty    = H * (0.05 + Math.random() * 0.35);   // burst in top 5–40%
+      this.vx    = (Math.random() - 0.5) * 1.5;
+      this.vy    = -(H / 38 + Math.random() * H / 60);  // fast upward
       this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
       this.trail = [];
       this.done  = false;
@@ -1921,7 +1921,7 @@ let confettiActive = true;
   /* ── RENDER LOOP ──────────────────────────────────── */
   (function fwLoop() {
     if (fwFading) {
-      fwAlpha = Math.max(0, fwAlpha - 0.008);  // slow fade out
+      fwAlpha = Math.max(0, fwAlpha - 0.025);  // faster fade out
       fwCv.style.opacity = fwAlpha;
       if (fwAlpha <= 0) {
         fwCtx.clearRect(0, 0, fwCv.width, fwCv.height);
@@ -2107,19 +2107,25 @@ function initHeart() {
         ctx.restore();
 
       } else {
-        // FLOW phase — "I love you" words orbit heart smoothly
-        p.flowAngle += 0.007;  // consistent speed for all particles = smooth
+        // FLOW phase — "I love you" words orbit heart with glow
+        p.flowAngle += 0.007;
         const pos = heart(p.flowAngle);
-        p.x = CX + pos.x*SCALE + p.offsetX;
-        p.y = CY + pos.y*SCALE + p.offsetY;
+        p.x = CX + pos.x*SCALE;
+        p.y = CY + pos.y*SCALE;
+        p.twinkle += 0.04;
+        const glow = 12 + Math.abs(Math.sin(p.twinkle)) * 10;
         ctx.save();
-        ctx.globalAlpha  = p.alpha * 0.9;
+        ctx.globalAlpha  = 0.9 + Math.abs(Math.sin(p.twinkle)) * 0.1;
         ctx.fillStyle    = p.color;
         ctx.shadowColor  = p.color;
-        ctx.shadowBlur   = 6;
+        ctx.shadowBlur   = glow;
         ctx.font         = `bold ${p.size*1.8}px Arial`;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
+        ctx.fillText('I love you', p.x, p.y);
+        // Second pass for extra glow intensity
+        ctx.shadowBlur   = glow * 1.5;
+        ctx.globalAlpha  = 0.4;
         ctx.fillText('I love you', p.x, p.y);
         ctx.restore();
       }
@@ -2133,10 +2139,10 @@ function initHeart() {
     // ── GOLD CENTER MESSAGE ──
     if (phase==='flow' && phaseTime>1.5 && !msgStarted) {
       msgStarted=true;
-      // Wait until "Sister!" has been visible for 1.5s then launch fireworks
-      setTimeout(()=>{ if(window.startFireworks) window.startFireworks(); }, 1500);
-      // Fade out fireworks slowly after 7s
-      setTimeout(()=>{ if(window.fadeOutFireworks) window.fadeOutFireworks(); }, 8500);
+      // Fireworks appear right after Sister! is visible
+      setTimeout(()=>{ if(window.startFireworks) window.startFireworks(); }, 800);
+      // Disappear faster
+      setTimeout(()=>{ if(window.fadeOutFireworks) window.fadeOutFireworks(); }, 5000);
     }
     if (msgStarted) {
       heartMsgAlpha = Math.min(heartMsgAlpha+.012, 1);
